@@ -12,35 +12,45 @@ import (
 const createJob = `-- name: CreateJob :one
 INSERT INTO jobs (absolute_url, data)
 VALUES (?, ?)
-RETURNING id, absolute_url, data
+RETURNING id, absolute_url, data, source
 `
 
 type CreateJobParams struct {
-	AbsoluteUrl string
-	Data        interface{}
+	AbsoluteUrl string      `json:"absolute_url"`
+	Data        interface{} `json:"data"`
 }
 
 func (q *Queries) CreateJob(ctx context.Context, arg CreateJobParams) (Job, error) {
 	row := q.db.QueryRowContext(ctx, createJob, arg.AbsoluteUrl, arg.Data)
 	var i Job
-	err := row.Scan(&i.ID, &i.AbsoluteUrl, &i.Data)
+	err := row.Scan(
+		&i.ID,
+		&i.AbsoluteUrl,
+		&i.Data,
+		&i.Source,
+	)
 	return i, err
 }
 
 const getJob = `-- name: GetJob :one
-SELECT id, absolute_url, data FROM jobs
+SELECT id, absolute_url, data, source FROM jobs
 WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetJob(ctx context.Context, id int64) (Job, error) {
 	row := q.db.QueryRowContext(ctx, getJob, id)
 	var i Job
-	err := row.Scan(&i.ID, &i.AbsoluteUrl, &i.Data)
+	err := row.Scan(
+		&i.ID,
+		&i.AbsoluteUrl,
+		&i.Data,
+		&i.Source,
+	)
 	return i, err
 }
 
 const listJobs = `-- name: ListJobs :many
-SELECT id, absolute_url, data FROM jobs
+SELECT id, absolute_url, data, source FROM jobs
 ORDER BY id
 `
 
@@ -53,7 +63,12 @@ func (q *Queries) ListJobs(ctx context.Context) ([]Job, error) {
 	var items []Job
 	for rows.Next() {
 		var i Job
-		if err := rows.Scan(&i.ID, &i.AbsoluteUrl, &i.Data); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.AbsoluteUrl,
+			&i.Data,
+			&i.Source,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

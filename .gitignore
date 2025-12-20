@@ -1,2 +1,2 @@
 .env
-db/database.sqlite3
+db/jobscraping.db

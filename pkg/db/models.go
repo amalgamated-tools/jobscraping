@@ -4,12 +4,17 @@
 
 package db
 
+import (
+	"database/sql"
+)
+
 type Job struct {
-	ID          int64
-	AbsoluteUrl string
-	Data        interface{}
+	ID          int64          `json:"id"`
+	AbsoluteUrl string         `json:"absolute_url"`
+	Data        interface{}    `json:"data"`
+	Source      sql.NullString `json:"source"`
 }
 
 type SchemaMigration struct {
-	Version string
+	Version string `json:"version"`
 }
