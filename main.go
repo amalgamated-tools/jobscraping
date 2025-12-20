@@ -15,7 +15,7 @@ var ddl string
 func main() {
 	ctx := context.Background()
 
-	ab, err := sql.Open("sqlite", "file:jobscraping.db?cache=shared&mode=rwc")
+	ab, err := sql.Open("sqlite", "file:db/jobscraping.db?cache=shared&mode=rwc")
 	if err != nil {
 		panic(err)
 	}
