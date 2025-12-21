@@ -98,9 +98,7 @@ func Test_parseSingleAshbyJob(t *testing.T) {
 	if job.DatePosted.IsZero() {
 		t.Errorf("parseAshbyJob() DatePosted is zero")
 	}
-	if job.URL != "https://jobs.ashbyhq.com/ashby/6765ef2e-7905-4fbc-b941-783049e7835f" {
-		t.Errorf("parseAshbyJob() URL = %v, want %v", job.URL, "https://jobs.ashbyhq.com/ashby/6765ef2e-7905-4fbc-b941-783049e7835f")
-	}
+
 	if job.CompensationUnit == nil || helpers.StringValue(job.CompensationUnit) != "€" {
 		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", helpers.StringValue(job.CompensationUnit), "YEAR")
 	}

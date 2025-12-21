@@ -55,7 +55,8 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) error {
 	if err != nil {
 		return fmt.Errorf("error parsing Ashby job: %w", err)
 	}
-	fmt.Printf("Parsed job: %+v\n", job)
+
+	job.URL = fmt.Sprintf("https://jobs.ashbyhq.com/%s/%s", companyName, jobID)
 	return nil
 }
 
@@ -200,6 +201,13 @@ func parseSingleJob(job *models.Job) error {
 				job.IsRemote = true
 			} else {
 				job.IsRemote = false
+			}
+		case "secondaryLocationNames":
+			_, jerr := jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+				job.AddMetadata("secondary_location", string(value))
+			})
+			if jerr != nil {
+				return fmt.Errorf("error parsing secondaryLocationNames: %w", jerr)
 			}
 		case "publishedDate":
 			stringValue, err := jsonparser.ParseString(value)
