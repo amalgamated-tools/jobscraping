@@ -11,7 +11,11 @@ import (
 func main() {
 	ctx := context.Background()
 	// as an example, let's scrape the company "ashby" on Ashby
-	err := ashby.ScrapeCompany(ctx, "ashby")
+	// err := ashby.ScrapeCompany(ctx, "ashby")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	err := ashby.ScrapeJob(ctx, "ashby", "6765ef2e-7905-4fbc-b941-783049e7835f")
 	if err != nil {
 		panic(err)
 	}
