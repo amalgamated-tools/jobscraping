@@ -1,4 +1,4 @@
-package structs
+package models
 
 import (
 	"strings"
@@ -17,9 +17,9 @@ const (
 
 func ParseEmploymentType(empType string) EmploymentType {
 	switch strings.ToLower(empType) {
-	case "full_time", "full time", "full-time":
+	case "full_time", "full time", "full-time", "fulltime":
 		return FullTime
-	case "part_time", "part time", "part-time":
+	case "part_time", "part time", "part-time", "parttime":
 		return PartTime
 	case "contract":
 		return Contract

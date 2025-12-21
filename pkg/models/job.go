@@ -1,4 +1,4 @@
-package structs
+package models
 
 import (
 	"strings"
@@ -6,25 +6,26 @@ import (
 )
 
 type Job struct {
-	Source           string         `json:"source"`
-	SourceID         string         `json:"source_id"`
-	City             *string        `json:"city"`
-	Country          *string        `json:"country"`
+	URL              string         `json:"url"`
+	CompensationUnit *string        `json:"compensation_unit"`
 	DatePosted       time.Time      `json:"date_posted"`
 	Department       Department     `json:"department"`
 	Description      string         `json:"description"`
 	EmploymentType   EmploymentType `json:"employment_type,omitempty"`
 	Equity           EquityType     `json:"equity,omitempty"`
 	IsRemote         bool           `json:"is_remote"`
+	Location         string         `json:"location,omitempty"`
 	LocationAddress  *string        `json:"location_address"`
 	LocationType     LocationType   `json:"location_type,omitempty"`
-	CompensationUnit *string        `json:"compensation_unit"`
 	MaxCompensation  float64        `json:"max_compensation"`
 	MinCompensation  float64        `json:"min_compensation"`
+	Source           string         `json:"source"`
+	SourceID         string         `json:"source_id"`
 	Title            string         `json:"title"`
 
 	Tags map[string][]string `json:"tags,omitempty"`
 
+	sourceData []byte `json:"-"`
 	// Company *Company `json:"company" db:"company"`
 }
 
@@ -55,4 +56,19 @@ func (j *Job) AddMetadata(key, value string) {
 	for item := range unique {
 		j.Tags[key] = append(j.Tags[key], item)
 	}
+}
+
+func (j *Job) GetMetadata(key string) []string {
+	if j.Tags == nil {
+		return nil
+	}
+	return j.Tags[key]
+}
+
+func (j *Job) GetSourceData() []byte {
+	return j.sourceData
+}
+
+func (j *Job) SetSourceData(body []byte) {
+	j.sourceData = body
 }
