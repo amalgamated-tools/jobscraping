@@ -15,14 +15,13 @@ var ashbyCompanyURL = "https://api.ashbyhq.com/posting-api/job-board/%s?includeC
 
 var ashbyJobQuery = `{"query":"{\n\tjobPosting(organizationHostedJobsPageName: \"%s\", jobPostingId: \"%s\") {\ncompensationPhilosophyHtml\ncompensationTiers {\n  id\n  title\n  tierSummary\n}\ncompensationTierSummary\ndepartmentName\ndescriptionHtml\nemploymentType\nid\nisConfidential\nisListed\nlinkedData\nlocationAddress\nlocationName\npublishedDate\nscrapeableCompensationSalarySummary\nsecondaryLocationNames\nteamNames\ntitle\nworkplaceType\n\t}\n}"}`
 
-func ScrapeCompany(ctx context.Context, companyName string, individual bool) error {
+func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual bool) ([]*models.Job, error) {
+	jobs := make([]*models.Job, 0)
 	companyURL := fmt.Sprintf(ashbyCompanyURL, companyName)
 	body, err := helpers.GetJSON(companyURL)
 	if err != nil {
-		return fmt.Errorf("error getting JSON from Ashby job board endpoint: %w", err)
+		return jobs, fmt.Errorf("error getting JSON from Ashby job board endpoint: %w", err)
 	}
-
-	fmt.Printf("Received response: %s\n", string(body))
 
 	_, err = jsonparser.ArrayEach(body, func(value []byte, dataType jsonparser.ValueType, offset int, ierr error) {
 		job, jerr := parseAshbyJob(value)
@@ -30,16 +29,22 @@ func ScrapeCompany(ctx context.Context, companyName string, individual bool) err
 			fmt.Printf("Error parsing job: %v\n", jerr)
 			return
 		}
-		fmt.Printf("Parsed job: %+v\n", job)
+		if scrapeIndividual {
+			job, err := ScrapeJob(ctx, companyName, job.SourceID)
+			if err != nil {
+				fmt.Printf("Error scraping individual job %s: %v\n", job.SourceID, err)
+			}
+		}
+		jobs = append(jobs, job)
 	}, "jobs")
 
 	if err != nil {
-		return fmt.Errorf("error parsing jobs array: %w", err)
+		return jobs, fmt.Errorf("error parsing jobs array: %w", err)
 	}
-	return nil
+	return jobs, nil
 }
 
-func ScrapeJob(ctx context.Context, companyName, jobID string) error {
+func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, error) {
 	payload := strings.NewReader(
 		fmt.Sprintf(ashbyJobQuery, companyName, jobID),
 	)
@@ -48,16 +53,16 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) error {
 		payload,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	job, err := parseAshbyJob([]byte(bodyText))
 	if err != nil {
-		return fmt.Errorf("error parsing Ashby job: %w", err)
+		return nil, fmt.Errorf("error parsing Ashby job: %w", err)
 	}
 
 	job.URL = fmt.Sprintf("https://jobs.ashbyhq.com/%s/%s", companyName, jobID)
-	return nil
+	return job, nil
 }
 
 func parseAshbyJob(data []byte) (*models.Job, error) {
@@ -131,7 +136,7 @@ func parseCompanyJob(job *models.Job) error {
 				job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
 			}
 			// publishedAt is a timestamp string "2025-11-14T00:33:59.437+00:00"
-			fmt.Println("publishedAt")
+
 		case "isRemote":
 			isRemote, err := jsonparser.ParseBoolean(value)
 			if err != nil {
@@ -181,7 +186,6 @@ func parseCompanyJob(job *models.Job) error {
 
 func parseSingleJob(job *models.Job) error {
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
-		fmt.Println(string(key))
 		switch string(key) {
 		case "id":
 			job.SourceID = string(value)

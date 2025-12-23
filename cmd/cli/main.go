@@ -3,22 +3,32 @@ package main
 import (
 	"context"
 	_ "embed"
+	"fmt"
+	"log/slog"
+	"os"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/ashby"
 	_ "modernc.org/sqlite"
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	ctx := context.Background()
 	// as an example, let's scrape the company "ashby" on Ashby
 	// err := ashby.ScrapeCompany(ctx, "ashby")
 	// if err != nil {
 	// 	panic(err)
 	// }
-	err := ashby.ScrapeJob(ctx, "ashby", "6765ef2e-7905-4fbc-b941-783049e7835f")
+	jobs, err := ashby.ScrapeCompany(ctx, "ashby", false)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("Scraped %d jobs from Ashby company page\n", len(jobs))
+	job, err := ashby.ScrapeJob(ctx, "ashby", "6765ef2e-7905-4fbc-b941-783049e7835f")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Scraped job: %+v\n", job)
 	// ab, err := sql.Open("sqlite", "file:db/jobscraping.db?cache=shared&mode=rwc")
 	// if err != nil {
 	// 	panic(err)
