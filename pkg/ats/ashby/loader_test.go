@@ -1,6 +1,7 @@
 package ashby
 
 import (
+	"context"
 	_ "embed"
 	"slices"
 	"strings"
@@ -17,7 +18,7 @@ var companies_job string
 var single_job string
 
 func Test_parseAshbyJob(t *testing.T) {
-	job, err := parseAshbyJob([]byte(companies_job))
+	job, err := parseAshbyJob(context.Background(), []byte(companies_job))
 	if err != nil {
 		t.Fatalf("parseAshbyJob() error = %v", err)
 	}
@@ -65,7 +66,7 @@ func Test_parseAshbyJob(t *testing.T) {
 }
 
 func Test_parseSingleAshbyJob(t *testing.T) {
-	job, err := parseAshbyJob([]byte(single_job))
+	job, err := parseAshbyJob(context.Background(), []byte(single_job))
 	if err != nil {
 		t.Fatalf("parseAshbyJob() error = %v", err)
 	}
