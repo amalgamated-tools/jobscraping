@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	models "github.com/amalgamated-tools/jobscraping/pkg/ats/models"
 	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
-	"github.com/amalgamated-tools/jobscraping/pkg/models"
 )
 
 //go:embed companies_job.json
