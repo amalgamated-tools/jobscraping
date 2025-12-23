@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/amalgamated-tools/jobscraping/pkg/ashby"
+	"github.com/amalgamated-tools/jobscraping/pkg/ats/ashby"
 	_ "modernc.org/sqlite"
 )
 

@@ -15,7 +15,7 @@ var ashbyCompanyURL = "https://api.ashbyhq.com/posting-api/job-board/%s?includeC
 
 var ashbyJobQuery = `{"query":"{\n\tjobPosting(organizationHostedJobsPageName: \"%s\", jobPostingId: \"%s\") {\ncompensationPhilosophyHtml\ncompensationTiers {\n  id\n  title\n  tierSummary\n}\ncompensationTierSummary\ndepartmentName\ndescriptionHtml\nemploymentType\nid\nisConfidential\nisListed\nlinkedData\nlocationAddress\nlocationName\npublishedDate\nscrapeableCompensationSalarySummary\nsecondaryLocationNames\nteamNames\ntitle\nworkplaceType\n\t}\n}"}`
 
-func ScrapeCompany(ctx context.Context, companyName string) error {
+func ScrapeCompany(ctx context.Context, companyName string, individual bool) error {
 	companyURL := fmt.Sprintf(ashbyCompanyURL, companyName)
 	body, err := helpers.GetJSON(companyURL)
 	if err != nil {
