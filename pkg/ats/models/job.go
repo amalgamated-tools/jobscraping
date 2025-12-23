@@ -33,6 +33,7 @@ func (j *Job) AddMetadata(key, value string) {
 	if key == "" || value == "" {
 		return
 	}
+
 	if j.Tags == nil {
 		j.Tags = make(map[string][]string)
 	}
@@ -45,6 +46,7 @@ func (j *Job) AddMetadata(key, value string) {
 		for i := range values {
 			values[i] = strings.TrimSpace(values[i])
 		}
+
 		j.Tags[key] = append(j.Tags[key], values...)
 	}
 	// deduplicate this key
@@ -52,6 +54,7 @@ func (j *Job) AddMetadata(key, value string) {
 	for _, item := range j.Tags[key] {
 		unique[item] = struct{}{}
 	}
+
 	j.Tags[key] = make([]string, 0, len(unique))
 	for item := range unique {
 		j.Tags[key] = append(j.Tags[key], item)
@@ -62,6 +65,7 @@ func (j *Job) GetMetadata(key string) []string {
 	if j.Tags == nil {
 		return nil
 	}
+
 	return j.Tags[key]
 }
 

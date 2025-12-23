@@ -18,13 +18,14 @@ var ashbyJobQuery = `{"query":"{\n\tjobPosting(organizationHostedJobsPageName: \
 
 func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual bool) ([]*models.Job, error) {
 	slog.DebugContext(ctx, "Scraping company", slog.String("ats", "ashby"), slog.String("company_name", companyName), slog.Bool("scrape_individual", scrapeIndividual))
+
 	jobs := make([]*models.Job, 0)
 
 	// The URL is like https://api.ashbyhq.com/posting-api/job-board/{companyName}?includeCompensation=true
 	companyURL := fmt.Sprintf(ashbyCompanyURL, companyName)
 
 	// Get the JSON from the company job board endpoint
-	body, err := helpers.GetJSON(ctx, companyURL)
+	body, err := helpers.GetJSON(ctx, companyURL, nil)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error getting JSON from Ashby job board endpoint", slog.String("url", companyURL), slog.Any("error", err))
 		return jobs, fmt.Errorf("error getting JSON from Ashby job board endpoint: %w", err)
@@ -36,22 +37,25 @@ func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual boo
 			slog.ErrorContext(ctx, "Error parsing Ashby job from jobs array", slog.Any("error", jerr))
 			return
 		}
+
 		if scrapeIndividual {
 			slog.DebugContext(ctx, "Scraping individual job", slog.String("job_id", job.SourceID))
+
 			job, err := ScrapeJob(ctx, companyName, job.SourceID)
 			if err != nil {
 				slog.ErrorContext(ctx, "Error scraping individual job", slog.String("job_id", job.SourceID), slog.Any("error", err))
 				return
 			}
 		}
+
 		slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
 		jobs = append(jobs, job)
 	}, "jobs")
-
 	if err != nil {
 		slog.ErrorContext(ctx, "Error parsing jobs array from Ashby job board endpoint", slog.Any("error", err))
 		return jobs, fmt.Errorf("error parsing jobs array: %w", err)
 	}
+
 	return jobs, nil
 }
 
@@ -60,10 +64,12 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 	payload := strings.NewReader(
 		fmt.Sprintf(ashbyJobQuery, companyName, jobID),
 	)
+
 	bodyText, err := helpers.PostJSON(
 		ctx,
 		"https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobPosting",
 		payload,
+		nil,
 	)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error posting JSON to Ashby job endpoint", slog.String("url", "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobPosting"), slog.Any("error", err))
@@ -77,6 +83,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 	}
 
 	job.URL = fmt.Sprintf("https://jobs.ashbyhq.com/%s/%s", companyName, jobID)
+
 	return job, nil
 }
 
@@ -91,26 +98,31 @@ func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
 	if err == nil {
 		// has data->jobPosting
 		slog.DebugContext(ctx, "Parsing single jobPosting object")
+
 		err = parseSingleJob(ctx, job)
 		if err != nil {
 			slog.ErrorContext(ctx, "Error parsing single jobPosting object", slog.Any("error", err))
 			return nil, fmt.Errorf("error parsing Ashby jobPosting object: %w", err)
 		}
+
 		return job, nil
 	} else {
 		// no data->jobPosting, so parse directly
 		slog.DebugContext(ctx, "Parsing company job object")
+
 		err = parseCompanyJob(ctx, job)
 		if err != nil {
 			slog.ErrorContext(ctx, "Error parsing company job object", slog.Any("error", err))
 			return nil, fmt.Errorf("error parsing Ashby job object: %w", err)
 		}
+
 		return job, nil
 	}
 }
 
 func parseCompanyJob(ctx context.Context, job *models.Job) error {
 	slog.DebugContext(ctx, "Parsing company job object")
+
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		switch string(key) {
 		case "id":
@@ -133,6 +145,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 					slog.ErrorContext(ctx, "Error parsing secondaryLocations location", slog.Any("error", ierr))
 					return
 				}
+
 				job.AddMetadata("secondary_location", location)
 			})
 			if jerr != nil {
@@ -145,6 +158,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 				slog.ErrorContext(ctx, "Error parsing publishedAt", slog.Any("error", err))
 				return fmt.Errorf("error parsing publishedAt: %w", err)
 			}
+
 			datePosted, err := time.Parse("2006-01-02", stringValue)
 			if err != nil {
 				// if this is a time.ParseError, we can try to parse it as a full date-time
@@ -166,6 +180,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 				slog.ErrorContext(ctx, "Error parsing isRemote", slog.Any("error", err))
 				return fmt.Errorf("error parsing isRemote: %w", err)
 			}
+
 			job.IsRemote = isRemote
 		case "jobUrl":
 			job.URL = string(value)
@@ -186,21 +201,26 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 				slog.ErrorContext(ctx, "Unable to parse compensation string", slog.String("summary", summary))
 				return fmt.Errorf("unable to parse compensation string: %s", summary)
 			}
+
 			if comp.MinSalary != nil {
 				job.MinCompensation = float64(*comp.MinSalary)
 			}
+
 			if comp.MaxSalary != nil {
 				job.MaxCompensation = float64(*comp.MaxSalary)
 			}
+
 			if comp.Currency != "" {
 				job.CompensationUnit = helpers.Ptr(comp.Currency)
 			}
+
 			if comp.OffersEquity {
 				job.Equity = models.EquityOffered
 			}
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -213,6 +233,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 
 func parseSingleJob(ctx context.Context, job *models.Job) error {
 	slog.DebugContext(ctx, "Parsing single jobPosting object")
+
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		switch string(key) {
 		case "id":
@@ -230,6 +251,7 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 				slog.ErrorContext(ctx, "Error parsing workplaceType", slog.Any("error", err))
 				return fmt.Errorf("error parsing workplaceType: %w", err)
 			}
+
 			if strings.EqualFold(workplaceType, "Remote") {
 				job.IsRemote = true
 			} else {
@@ -249,6 +271,7 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 				slog.ErrorContext(ctx, "Error parsing publishedDate", slog.Any("error", err))
 				return fmt.Errorf("error parsing publishedDate: %w", err)
 			}
+
 			datePosted, err := time.Parse("2006-01-02", stringValue)
 			if err != nil {
 				// if this is a time.ParseError, we can try to parse it as a full date-time
@@ -277,26 +300,32 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 				slog.ErrorContext(ctx, "Unable to parse compensation string", slog.String("summary", string(value)))
 				return fmt.Errorf("unable to parse compensation string: %s", string(value))
 			}
+
 			if comp.MinSalary != nil {
 				job.MinCompensation = float64(*comp.MinSalary)
 			}
+
 			if comp.MaxSalary != nil {
 				job.MaxCompensation = float64(*comp.MaxSalary)
 			}
+
 			if comp.Currency != "" {
 				job.CompensationUnit = helpers.Ptr(comp.Currency)
 			}
+
 			if comp.OffersEquity {
 				job.Equity = models.EquityOffered
 			}
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
+
 		return nil
 	}, "data", "jobPosting")
 	if err != nil {
 		slog.ErrorContext(ctx, "Error parsing jobPosting object", slog.Any("error", err))
 		return fmt.Errorf("error parsing jobPosting object: %w", err)
 	}
+
 	return nil
 }

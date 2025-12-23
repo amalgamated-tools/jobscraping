@@ -66,10 +66,10 @@ func (j *Job) ProcessCommitment(commitments []string) {
 		// observability.GetGlobalLogger().With(
 		// 	zap.String("employment_type", j.EmploymentType.String()),
 		// ).Debug("Employment type already set, ignoring new value")
-
 		for _, c := range updatedCommitments {
 			j.AddMetadata("alternate_commitments", c)
 		}
+
 		return
 	}
 
@@ -78,6 +78,7 @@ func (j *Job) ProcessCommitment(commitments []string) {
 			j.EmploymentType = PartTime
 			return
 		}
+
 		if strings.Contains(c, "contract") || strings.Contains(c, "contractor") || strings.Contains(c, "term") {
 			j.EmploymentType = Contract
 			return

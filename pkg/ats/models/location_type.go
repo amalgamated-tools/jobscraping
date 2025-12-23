@@ -41,6 +41,7 @@ func (j *Job) ProcessLocationType(locations []string) {
 		for _, location := range updatedLocations {
 			j.AddMetadata("alternate_locations", location)
 		}
+
 		return
 	}
 
@@ -49,6 +50,7 @@ func (j *Job) ProcessLocationType(locations []string) {
 		case "remote", "telecommute":
 			j.LocationType = RemoteLocation
 			j.IsRemote = true
+
 			return
 		case "onsite":
 			j.LocationType = OnsiteLocation
@@ -60,6 +62,7 @@ func (j *Job) ProcessLocationType(locations []string) {
 			if strings.Contains(strings.ToLower(location), "remote") {
 				j.LocationType = RemoteLocation
 				j.IsRemote = true
+
 				return
 			} else if strings.Contains(strings.ToLower(location), "onsite") {
 				j.LocationType = OnsiteLocation
