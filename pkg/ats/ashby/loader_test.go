@@ -12,13 +12,15 @@ import (
 )
 
 //go:embed companies_job.json
-var companies_job string
+var companiesJob string
 
 //go:embed single_job.json
-var single_job string
+var singleJob string
 
 func Test_parseAshbyJob(t *testing.T) {
-	job, err := parseAshbyJob(context.Background(), []byte(companies_job))
+	t.Parallel()
+
+	job, err := parseAshbyJob(context.Background(), []byte(companiesJob))
 	if err != nil {
 		t.Fatalf("parseAshbyJob() error = %v", err)
 	}
@@ -79,7 +81,9 @@ func Test_parseAshbyJob(t *testing.T) {
 }
 
 func Test_parseSingleAshbyJob(t *testing.T) {
-	job, err := parseAshbyJob(context.Background(), []byte(single_job))
+	t.Parallel()
+
+	job, err := parseAshbyJob(context.Background(), []byte(singleJob))
 	if err != nil {
 		t.Fatalf("parseAshbyJob() error = %v", err)
 	}

@@ -4,16 +4,22 @@ import (
 	"strings"
 )
 
+// LocationType represents the type of job location.
 type LocationType int64
 
 const (
+	// RemoteLocation represents a remote job location.
 	RemoteLocation LocationType = iota
+	// OnsiteLocation represents an onsite job location.
 	OnsiteLocation
+	// HybridLocation represents a hybrid job location.
 	HybridLocation
+	// UnknownLocation represents an unknown or unspecified job location.
 	UnknownLocation
 )
 
-func (j *Job) ProcessLocationType(locations []string) {
+// ProcessLocationType processes a list of location strings to determine and set the LocationType of the Job.
+func (j *Job) ProcessLocationType(locations []string) { //nolint:cyclop
 	if len(locations) == 0 {
 		// observability.GetGlobalLogger().Debug("No locations provided, setting job location type to Unknown")
 		j.LocationType = UnknownLocation
@@ -59,18 +65,19 @@ func (j *Job) ProcessLocationType(locations []string) {
 			j.LocationType = HybridLocation
 			return
 		default:
-			if strings.Contains(strings.ToLower(location), "remote") {
+			switch {
+			case strings.Contains(strings.ToLower(location), "remote"):
 				j.LocationType = RemoteLocation
 				j.IsRemote = true
 
 				return
-			} else if strings.Contains(strings.ToLower(location), "onsite") {
+			case strings.Contains(strings.ToLower(location), "onsite"):
 				j.LocationType = OnsiteLocation
 				return
-			} else if strings.Contains(strings.ToLower(location), "hybrid") {
+			case strings.Contains(strings.ToLower(location), "hybrid"):
 				j.LocationType = HybridLocation
 				return
-			} else {
+			default:
 				// observability.GetGlobalLogger().With(
 				// 	zap.String("location", location),
 				// ).Warn("Unknown job location type")
@@ -81,6 +88,7 @@ func (j *Job) ProcessLocationType(locations []string) {
 	}
 }
 
+// ParseLocationType converts a string representation of a location type to its corresponding LocationType constant.
 func ParseLocationType(value string) LocationType {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "remote", "telecommute":
@@ -94,6 +102,7 @@ func ParseLocationType(value string) LocationType {
 	}
 }
 
+// String returns the string representation of the LocationType.
 func (e LocationType) String() string {
 	return [...]string{
 		"Remote",

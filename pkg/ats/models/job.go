@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Job represents a job posting with various attributes.
 type Job struct {
 	URL              string         `json:"url"`
 	CompensationUnit *string        `json:"compensation_unit"`
@@ -29,6 +30,7 @@ type Job struct {
 	// Company *Company `json:"company" db:"company"`
 }
 
+// AddMetadata adds metadata to the job's tags.
 func (j *Job) AddMetadata(key, value string) {
 	if key == "" || value == "" {
 		return
@@ -61,6 +63,7 @@ func (j *Job) AddMetadata(key, value string) {
 	}
 }
 
+// GetMetadata retrieves metadata values associated with a given key from the job's tags.
 func (j *Job) GetMetadata(key string) []string {
 	if j.Tags == nil {
 		return nil
@@ -69,10 +72,12 @@ func (j *Job) GetMetadata(key string) []string {
 	return j.Tags[key]
 }
 
+// GetSourceData retrieves the raw source data associated with the job.
 func (j *Job) GetSourceData() []byte {
 	return j.sourceData
 }
 
+// SetSourceData sets the raw source data for the job.
 func (j *Job) SetSourceData(body []byte) {
 	j.sourceData = body
 }

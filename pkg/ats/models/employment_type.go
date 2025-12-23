@@ -4,17 +4,25 @@ import (
 	"strings"
 )
 
+// EmploymentType represents various types of employment commitments.
 type EmploymentType int64
 
 const (
+	// FullTime represents full-time employment.
 	FullTime EmploymentType = iota
+	// PartTime represents part-time employment.
 	PartTime
+	// Contract represents contract-based employment.
 	Contract
+	// Internship represents internship positions.
 	Internship
+	// Temporary represents temporary employment.
 	Temporary
+	// UnknownEmploymentType represents an unknown or unspecified employment type.
 	UnknownEmploymentType
 )
 
+// ParseEmploymentType converts a string representation of an employment type to its corresponding EmploymentType constant.
 func ParseEmploymentType(empType string) EmploymentType {
 	switch strings.ToLower(empType) {
 	case "full_time", "full time", "full-time", "fulltime":
@@ -32,6 +40,7 @@ func ParseEmploymentType(empType string) EmploymentType {
 	}
 }
 
+// String returns the string representation of the EmploymentType.
 func (e EmploymentType) String() string {
 	return [...]string{
 		"Full Time",
@@ -43,7 +52,8 @@ func (e EmploymentType) String() string {
 	}[e]
 }
 
-func (j *Job) ProcessCommitment(commitments []string) {
+// ProcessCommitment processes a list of commitment strings to determine and set the EmploymentType of the Job.
+func (j *Job) ProcessCommitment(commitments []string) { //nolint:cyclop
 	if len(commitments) == 0 {
 		j.EmploymentType = FullTime
 		return

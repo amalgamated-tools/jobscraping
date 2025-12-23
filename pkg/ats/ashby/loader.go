@@ -1,3 +1,4 @@
+// Package ashby implements an ATS loader for Ashby ATS.
 package ashby
 
 import (
@@ -16,6 +17,7 @@ var ashbyCompanyURL = "https://api.ashbyhq.com/posting-api/job-board/%s?includeC
 
 var ashbyJobQuery = `{"query":"{\n\tjobPosting(organizationHostedJobsPageName: \"%s\", jobPostingId: \"%s\") {\ncompensationPhilosophyHtml\ncompensationTiers {\n  id\n  title\n  tierSummary\n}\ncompensationTierSummary\ndepartmentName\ndescriptionHtml\nemploymentType\nid\nisConfidential\nisListed\nlinkedData\nlocationAddress\nlocationName\npublishedDate\nscrapeableCompensationSalarySummary\nsecondaryLocationNames\nteamNames\ntitle\nworkplaceType\n\t}\n}"}`
 
+// ScrapeCompany scrapes all jobs for a given company from Ashby ATS.
 func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual bool) ([]*models.Job, error) {
 	slog.DebugContext(ctx, "Scraping company", slog.String("ats", "ashby"), slog.String("company_name", companyName), slog.Bool("scrape_individual", scrapeIndividual))
 
@@ -31,7 +33,7 @@ func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual boo
 		return jobs, fmt.Errorf("error getting JSON from Ashby job board endpoint: %w", err)
 	}
 
-	_, err = jsonparser.ArrayEach(body, func(value []byte, dataType jsonparser.ValueType, offset int, ierr error) {
+	_, err = jsonparser.ArrayEach(body, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 		job, jerr := parseAshbyJob(ctx, value)
 		if jerr != nil {
 			slog.ErrorContext(ctx, "Error parsing Ashby job from jobs array", slog.Any("error", jerr))
@@ -59,6 +61,7 @@ func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual boo
 	return jobs, nil
 }
 
+// ScrapeJob scrapes an individual job from Ashby ATS given the company name and job ID.
 func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, error) {
 	slog.DebugContext(ctx, "Scraping individual job", slog.String("ats", "ashby"), slog.String("company_name", companyName), slog.String("job_id", jobID))
 	payload := strings.NewReader(
@@ -73,10 +76,10 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 	)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error posting JSON to Ashby job endpoint", slog.String("url", "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobPosting"), slog.Any("error", err))
-		return nil, err
+		return nil, fmt.Errorf("error posting JSON to Ashby job endpoint: %w", err)
 	}
 
-	job, err := parseAshbyJob(ctx, []byte(bodyText))
+	job, err := parseAshbyJob(ctx, bodyText)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error parsing Ashby job from individual job endpoint", slog.String("job_id", jobID), slog.Any("error", err))
 		return nil, fmt.Errorf("error parsing Ashby job: %w", err)
@@ -106,24 +109,23 @@ func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
 		}
 
 		return job, nil
-	} else {
-		// no data->jobPosting, so parse directly
-		slog.DebugContext(ctx, "Parsing company job object")
-
-		err = parseCompanyJob(ctx, job)
-		if err != nil {
-			slog.ErrorContext(ctx, "Error parsing company job object", slog.Any("error", err))
-			return nil, fmt.Errorf("error parsing Ashby job object: %w", err)
-		}
-
-		return job, nil
 	}
+	// no data->jobPosting, so parse directly
+	slog.DebugContext(ctx, "Parsing company job object")
+
+	err = parseCompanyJob(ctx, job)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing company job object", slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing Ashby job object: %w", err)
+	}
+
+	return job, nil
 }
 
 func parseCompanyJob(ctx context.Context, job *models.Job) error {
 	slog.DebugContext(ctx, "Parsing company job object")
 
-	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
 		case "id":
 			job.SourceID = string(value)
@@ -139,7 +141,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 			job.Location = string(value)
 		case "secondaryLocations":
 			// this is an array of location objects
-			_, jerr := jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 				location, ierr := jsonparser.GetString(value, "location")
 				if ierr != nil {
 					slog.ErrorContext(ctx, "Error parsing secondaryLocations location", slog.Any("error", ierr))
