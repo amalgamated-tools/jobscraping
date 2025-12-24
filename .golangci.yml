@@ -1,0 +1,35 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - cyclop
+    - dogsled
+    - funlen
+    - exhaustruct
+    - gochecknoglobals
+    - gocognit
+    - lll
+    - nlreturn
+    - tagliatelle
+    - testpackage
+    - varnamelen
+    - wsl
+  enable:
+    - sloglint
+  settings:
+    sloglint:
+      # Enforce using attributes only.
+      # This will raise an error for any key-value pair arguments.
+      attr-only: true
+    depguard:
+      rules:
+        prevent_unmaintained_packages:
+          list-mode: lax # allow unless explicitely denied
+          files:
+            - $all
+            - "!$test"
+          allow:
+            - $gostd
+          deny:
+            - pkg: io/ioutil
+              desc: "replaced by io and os packages since Go 1.16: https://tip.golang.org/doc/go1.16#ioutil"
