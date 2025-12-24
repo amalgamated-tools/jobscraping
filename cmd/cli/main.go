@@ -1,9 +1,9 @@
+// Package main implements a CLI tool for scraping job postings from various ATS platforms.
 package main
 
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"log/slog"
 	"os"
 
@@ -25,14 +25,15 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Scraped %d jobs from Ashby company page\n", len(jobs))
+	slog.InfoContext(ctx, "Scraped company", slog.Int("job_count", len(jobs)))
 
 	job, err := ashby.ScrapeJob(ctx, "ashby", "6765ef2e-7905-4fbc-b941-783049e7835f")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Scraped job: %+v\n", job)
+	slog.InfoContext(ctx, "Scraped job", slog.String("title", job.Title), slog.String("location", job.Location))
+
 	// ab, err := sql.Open("sqlite", "file:db/jobscraping.db?cache=shared&mode=rwc")
 	// if err != nil {
 	// 	panic(err)

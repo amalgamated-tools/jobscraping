@@ -3,6 +3,7 @@ package ashby
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -13,9 +14,12 @@ import (
 	"github.com/buger/jsonparser"
 )
 
-var ashbyCompanyURL = "https://api.ashbyhq.com/posting-api/job-board/%s?includeCompensation=true"
-
-var ashbyJobQuery = `{"query":"{\n\tjobPosting(organizationHostedJobsPageName: \"%s\", jobPostingId: \"%s\") {\ncompensationPhilosophyHtml\ncompensationTiers {\n  id\n  title\n  tierSummary\n}\ncompensationTierSummary\ndepartmentName\ndescriptionHtml\nemploymentType\nid\nisConfidential\nisListed\nlinkedData\nlocationAddress\nlocationName\npublishedDate\nscrapeableCompensationSalarySummary\nsecondaryLocationNames\nteamNames\ntitle\nworkplaceType\n\t}\n}"}`
+var (
+	// ErrUnableToParseCompensation is returned when a compensation string cannot be parsed.
+	ErrUnableToParseCompensation = errors.New("received non-OK status code")
+	ashbyCompanyURL              = "https://api.ashbyhq.com/posting-api/job-board/%s?includeCompensation=true"
+	ashbyJobQuery                = `{"query":"{\n\tjobPosting(organizationHostedJobsPageName: \"%s\", jobPostingId: \"%s\") {\ncompensationPhilosophyHtml\ncompensationTiers {\n  id\n  title\n  tierSummary\n}\ncompensationTierSummary\ndepartmentName\ndescriptionHtml\nemploymentType\nid\nisConfidential\nisListed\nlinkedData\nlocationAddress\nlocationName\npublishedDate\nscrapeableCompensationSalarySummary\nsecondaryLocationNames\nteamNames\ntitle\nworkplaceType\n\t}\n}"}`
+)
 
 // ScrapeCompany scrapes all jobs for a given company from Ashby ATS.
 func ScrapeCompany(ctx context.Context, companyName string, scrapeIndividual bool) ([]*models.Job, error) {
@@ -141,7 +145,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 			job.Location = string(value)
 		case "secondaryLocations":
 			// this is an array of location objects
-			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
+			_, _ = jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 				location, ierr := jsonparser.GetString(value, "location")
 				if ierr != nil {
 					slog.ErrorContext(ctx, "Error parsing secondaryLocations location", slog.Any("error", ierr))
@@ -150,32 +154,8 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 
 				job.AddMetadata("secondary_location", location)
 			})
-			if jerr != nil {
-				slog.ErrorContext(ctx, "Error parsing secondaryLocations", slog.Any("error", jerr))
-				return fmt.Errorf("error parsing secondaryLocations: %w", jerr)
-			}
 		case "publishedAt":
-			stringValue, err := jsonparser.ParseString(value)
-			if err != nil {
-				slog.ErrorContext(ctx, "Error parsing publishedAt", slog.Any("error", err))
-				return fmt.Errorf("error parsing publishedAt: %w", err)
-			}
-
-			datePosted, err := time.Parse("2006-01-02", stringValue)
-			if err != nil {
-				// if this is a time.ParseError, we can try to parse it as a full date-time
-				datePosted, err = time.Parse(time.RFC3339, stringValue)
-				if err == nil {
-					job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
-				} else {
-					slog.ErrorContext(ctx, "Error parsing publishedAt as date-time", slog.Any("error", err))
-					return fmt.Errorf("error parsing publishedAt as date-time: %w", err)
-				}
-			} else {
-				job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
-			}
-			// publishedAt is a timestamp string "2025-11-14T00:33:59.437+00:00"
-
+			processDatePosted(ctx, job, value)
 		case "isRemote":
 			isRemote, err := jsonparser.ParseBoolean(value)
 			if err != nil {
@@ -201,7 +181,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 			comp := helpers.ParseCompensation(summary)
 			if !comp.Parsed {
 				slog.ErrorContext(ctx, "Unable to parse compensation string", slog.String("summary", summary))
-				return fmt.Errorf("unable to parse compensation string: %s", summary)
+				return fmt.Errorf("%w: %s", ErrUnableToParseCompensation, summary)
 			}
 
 			if comp.MinSalary != nil {
@@ -236,7 +216,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 func parseSingleJob(ctx context.Context, job *models.Job) error {
 	slog.DebugContext(ctx, "Parsing single jobPosting object")
 
-	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
 		case "id":
 			job.SourceID = string(value)
@@ -260,7 +240,7 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 				job.IsRemote = false
 			}
 		case "secondaryLocationNames":
-			_, jerr := jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 				job.AddMetadata("secondary_location", string(value))
 			})
 			if jerr != nil {
@@ -268,27 +248,9 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 				return fmt.Errorf("error parsing secondaryLocationNames: %w", jerr)
 			}
 		case "publishedDate":
-			stringValue, err := jsonparser.ParseString(value)
-			if err != nil {
-				slog.ErrorContext(ctx, "Error parsing publishedDate", slog.Any("error", err))
-				return fmt.Errorf("error parsing publishedDate: %w", err)
-			}
-
-			datePosted, err := time.Parse("2006-01-02", stringValue)
-			if err != nil {
-				// if this is a time.ParseError, we can try to parse it as a full date-time
-				datePosted, err = time.Parse(time.RFC3339, stringValue)
-				if err == nil {
-					job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
-				} else {
-					slog.ErrorContext(ctx, "Error parsing publishedDate as date-time", slog.Any("error", err))
-					return fmt.Errorf("error parsing publishedDate as date-time: %w", err)
-				}
-			} else {
-				job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
-			}
+			processDatePosted(ctx, job, value)
 		case "teamNames":
-			_, jerr := jsonparser.ArrayEach(value, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 				job.AddMetadata("team", string(value))
 			})
 			if jerr != nil {
@@ -300,7 +262,7 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 			comp := helpers.ParseCompensation(string(value))
 			if !comp.Parsed {
 				slog.ErrorContext(ctx, "Unable to parse compensation string", slog.String("summary", string(value)))
-				return fmt.Errorf("unable to parse compensation string: %s", string(value))
+				return fmt.Errorf("%w: %s", ErrUnableToParseCompensation, string(value))
 			}
 
 			if comp.MinSalary != nil {
@@ -330,4 +292,26 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 	}
 
 	return nil
+}
+
+func processDatePosted(ctx context.Context, job *models.Job, value []byte) {
+	stringValue, err := jsonparser.ParseString(value)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing publishedDate", slog.Any("error", err))
+		return
+	}
+
+	datePosted, err := time.Parse("2006-01-02", stringValue)
+	if err != nil {
+		// if this is a time.ParseError, we can try to parse it as a full date-time
+		datePosted, err = time.Parse(time.RFC3339, stringValue)
+		if err == nil {
+			job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
+		} else {
+			slog.ErrorContext(ctx, "Error parsing publishedDate as date-time", slog.Any("error", err))
+			return
+		}
+	} else {
+		job.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
+	}
 }

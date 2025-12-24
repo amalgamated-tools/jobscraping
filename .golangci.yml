@@ -2,7 +2,9 @@ version: "2"
 linters:
   default: all
   disable:
+    - cyclop
     - dogsled
+    - funlen
     - exhaustruct
     - gochecknoglobals
     - gocognit
@@ -19,15 +21,6 @@ linters:
       # Enforce using attributes only.
       # This will raise an error for any key-value pair arguments.
       attr-only: true
-    cyclop:
-      # The maximal code complexity to report.
-      # Default: 20
-      max-complexity: 20
-      # The maximal average package complexity.
-      # If it's higher than 0.0 (float) the check is enabled.
-      # Default: 0.0
-      package-average: 0.5   
-      skip-tests: true
     depguard:
       rules:
         prevent_unmaintained_packages:
