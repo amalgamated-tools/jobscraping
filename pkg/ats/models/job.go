@@ -1,8 +1,12 @@
 package models
 
 import (
+	"context"
+	"log/slog"
 	"strings"
 	"time"
+
+	"github.com/buger/jsonparser"
 )
 
 // Job represents a job posting with various attributes.
@@ -80,4 +84,27 @@ func (j *Job) GetSourceData() []byte {
 // SetSourceData sets the raw source data for the job.
 func (j *Job) SetSourceData(body []byte) {
 	j.sourceData = body
+}
+
+// ProcessDatePosted processes and sets the DatePosted field from a JSON value.
+func (j *Job) ProcessDatePosted(ctx context.Context, value []byte) {
+	stringValue, err := jsonparser.ParseString(value)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing publishedDate", slog.Any("error", err))
+		return
+	}
+
+	datePosted, err := time.Parse("2006-01-02", stringValue)
+	if err != nil {
+		// if this is a time.ParseError, we can try to parse it as a full date-time
+		datePosted, err = time.Parse(time.RFC3339, stringValue)
+		if err == nil {
+			j.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
+		} else {
+			slog.ErrorContext(ctx, "Error parsing publishedDate as date-time", slog.Any("error", err))
+			return
+		}
+	} else {
+		j.DatePosted = datePosted.In(time.UTC) // Ensure the date is in UTC
+	}
 }

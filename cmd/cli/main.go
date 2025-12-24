@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/ashby"
+	"github.com/amalgamated-tools/jobscraping/pkg/ats/greenhouse"
 	_ "modernc.org/sqlite"
 )
 
@@ -15,12 +16,8 @@ func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 
 	ctx := context.Background()
-	// as an example, let's scrape the company "ashby" on Ashby
-	// err := ashby.ScrapeCompany(ctx, "ashby")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	jobs, err := ashby.ScrapeCompany(ctx, "ashby", false)
+
+	jobs, err := greenhouse.ScrapeCompany(ctx, "greenhouse")
 	if err != nil {
 		panic(err)
 	}
