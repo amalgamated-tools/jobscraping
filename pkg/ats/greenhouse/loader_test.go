@@ -1,131 +1,71 @@
 package greenhouse
 
 import (
+	"context"
 	_ "embed"
-)
+	"slices"
+	"testing"
 
-//go:embed companies_job.json
-var companiesJob string
+	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
+	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
+)
 
 //go:embed single_job.json
 var singleJob string
 
-// func Test_parseAshbyJob(t *testing.T) {
-// 	t.Parallel()
+func Test_parseSingleGreenhouseJob(t *testing.T) {
+	t.Parallel()
 
-// 	job, err := parseAshbyJob(context.Background(), []byte(companiesJob))
-// 	if err != nil {
-// 		t.Fatalf("parseAshbyJob() error = %v", err)
-// 	}
+	job, err := parseGreenhouseJob(context.Background(), []byte(singleJob))
+	if err != nil {
+		t.Fatalf("parseGreenhouseJob() error = %v", err)
+	}
 
-// 	if job.SourceID != "6765ef2e-7905-4fbc-b941-783049e7835f" {
-// 		t.Errorf("parseAshbyJob() SourceID = %v, want %v", job.SourceID, "6765ef2e-7905-4fbc-b941-783049e7835f")
-// 	}
+	if job.SourceID != "7454336" {
+		t.Errorf("parseGreenhouseJob() SourceID = %v, want %v", job.SourceID, "7454336")
+	}
 
-// 	if job.Title != "Principal Product Engineer, EU" {
-// 		t.Errorf("parseAshbyJob() Title = %v, want %v", job.Title, "Principal Product Engineer, EU")
-// 	}
+	if job.Title != "Customer Success Manager II, Mid-Market" {
+		t.Errorf("parseGreenhouseJob() Title = %v, want %v", job.Title, "Customer Success Manager II, Mid-Market")
+	}
 
-// 	if job.Department != models.SoftwareEngineering {
-// 		t.Errorf("parseAshbyJob() Department = %v, want %v", job.Department, "Engineering")
-// 	}
+	if job.Department != models.SoftwareEngineering {
+		t.Errorf("parseGreenhouseJob() Department = %v, want %v", job.Department, "Engineering")
+	}
+	// if !strings.EqualFold(strings.Join(job.GetMetadata("team"), ","), "EMEA Engineering") {
+	// t.Errorf("parseGreenhouseJob() team metadata = %v, want %v", job.GetMetadata("team"), "EMEA Engineering")
+	// }
+	if job.EmploymentType != models.FullTime {
+		t.Errorf("parseGreenhouseJob() EmploymentType = %v, want %v", job.EmploymentType, "FullTime")
+	}
 
-// 	if !strings.EqualFold(strings.Join(job.GetMetadata("team"), ","), "EMEA Engineering") {
-// 		t.Errorf("parseAshbyJob() team metadata = %v, want %v", job.GetMetadata("team"), "EMEA Engineering")
-// 	}
+	if job.Location != "Remote - Europe" {
+		t.Errorf("parseGreenhouseJob() Location = %v, want %v", job.Location, "Remote - Europe")
+	}
 
-// 	if job.EmploymentType != models.FullTime {
-// 		t.Errorf("parseAshbyJob() EmploymentType = %v, want %v", job.EmploymentType, "FullTime")
-// 	}
+	if !job.IsRemote {
+		t.Errorf("parseGreenhouseJob() IsRemote = %v, want %v", job.IsRemote, true)
+	}
 
-// 	if job.Location != "Remote - Europe" {
-// 		t.Errorf("parseAshbyJob() Location = %v, want %v", job.Location, "Remote - Europe")
-// 	}
+	for _, v := range []string{"Barcelona", "Belgium", "France", "Netherlands", "Madrid"} {
+		if !slices.Contains(job.GetMetadata("secondary_location"), v) {
+			t.Errorf("parseGreenhouseJob() secondary_location metadata missing %v", v)
+		}
+	}
 
-// 	if !job.IsRemote {
-// 		t.Errorf("parseAshbyJob() IsRemote = %v, want %v", job.IsRemote, true)
-// 	}
+	if job.DatePosted.IsZero() {
+		t.Errorf("parseGreenhouseJob() DatePosted is zero")
+	}
 
-// 	for _, v := range []string{"Barcelona", "Belgium", "France", "Netherlands", "Madrid"} {
-// 		if !slices.Contains(job.GetMetadata("secondary_location"), v) {
-// 			t.Errorf("parseAshbyJob() secondary_location metadata missing %v", v)
-// 		}
-// 	}
+	if job.CompensationUnit == nil || helpers.StringValue(job.CompensationUnit) != "€" {
+		t.Errorf("parseGreenhouseJob() CompensationUnit = %v, want %v", helpers.StringValue(job.CompensationUnit), "YEAR")
+	}
 
-// 	if job.DatePosted.IsZero() {
-// 		t.Errorf("parseAshbyJob() DatePosted is zero")
-// 	}
+	if job.MinCompensation != 185000 {
+		t.Errorf("parseGreenhouseJob() MinCompensation = %v, want %v", job.MinCompensation, 185000)
+	}
 
-// 	if job.URL != "https://jobs.ashbyhq.com/ashby/6765ef2e-7905-4fbc-b941-783049e7835f" {
-// 		t.Errorf("parseAshbyJob() URL = %v, want %v", job.URL, "https://jobs.ashbyhq.com/ashby/6765ef2e-7905-4fbc-b941-783049e7835f")
-// 	}
-
-// 	if job.CompensationUnit == nil || helpers.StringValue(job.CompensationUnit) != "€" {
-// 		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", helpers.StringValue(job.CompensationUnit), "YEAR")
-// 	}
-
-// 	if job.MinCompensation != 185000 {
-// 		t.Errorf("parseAshbyJob() MinCompensation = %v, want %v", job.MinCompensation, 185000)
-// 	}
-
-// 	if job.MaxCompensation != 317000 {
-// 		t.Errorf("parseAshbyJob() MaxCompensation = %v, want %v", job.MaxCompensation, 317000)
-// 	}
-// }
-
-// func Test_parseSingleAshbyJob(t *testing.T) {
-// 	t.Parallel()
-
-// 	job, err := parseAshbyJob(context.Background(), []byte(singleJob))
-// 	if err != nil {
-// 		t.Fatalf("parseAshbyJob() error = %v", err)
-// 	}
-
-// 	if job.SourceID != "6765ef2e-7905-4fbc-b941-783049e7835f" {
-// 		t.Errorf("parseAshbyJob() SourceID = %v, want %v", job.SourceID, "6765ef2e-7905-4fbc-b941-783049e7835f")
-// 	}
-
-// 	if job.Title != "Principal Product Engineer, EU" {
-// 		t.Errorf("parseAshbyJob() Title = %v, want %v", job.Title, "Principal Product Engineer, EU")
-// 	}
-
-// 	if job.Department != models.SoftwareEngineering {
-// 		t.Errorf("parseAshbyJob() Department = %v, want %v", job.Department, "Engineering")
-// 	}
-// 	// if !strings.EqualFold(strings.Join(job.GetMetadata("team"), ","), "EMEA Engineering") {
-// 	// t.Errorf("parseAshbyJob() team metadata = %v, want %v", job.GetMetadata("team"), "EMEA Engineering")
-// 	// }
-// 	if job.EmploymentType != models.FullTime {
-// 		t.Errorf("parseAshbyJob() EmploymentType = %v, want %v", job.EmploymentType, "FullTime")
-// 	}
-
-// 	if job.Location != "Remote - Europe" {
-// 		t.Errorf("parseAshbyJob() Location = %v, want %v", job.Location, "Remote - Europe")
-// 	}
-
-// 	if !job.IsRemote {
-// 		t.Errorf("parseAshbyJob() IsRemote = %v, want %v", job.IsRemote, true)
-// 	}
-
-// 	for _, v := range []string{"Barcelona", "Belgium", "France", "Netherlands", "Madrid"} {
-// 		if !slices.Contains(job.GetMetadata("secondary_location"), v) {
-// 			t.Errorf("parseAshbyJob() secondary_location metadata missing %v", v)
-// 		}
-// 	}
-
-// 	if job.DatePosted.IsZero() {
-// 		t.Errorf("parseAshbyJob() DatePosted is zero")
-// 	}
-
-// 	if job.CompensationUnit == nil || helpers.StringValue(job.CompensationUnit) != "€" {
-// 		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", helpers.StringValue(job.CompensationUnit), "YEAR")
-// 	}
-
-// 	if job.MinCompensation != 185000 {
-// 		t.Errorf("parseAshbyJob() MinCompensation = %v, want %v", job.MinCompensation, 185000)
-// 	}
-
-// 	if job.MaxCompensation != 317000 {
-// 		t.Errorf("parseAshbyJob() MaxCompensation = %v, want %v", job.MaxCompensation, 317000)
-// 	}
-// }
+	if job.MaxCompensation != 317000 {
+		t.Errorf("parseGreenhouseJob() MaxCompensation = %v, want %v", job.MaxCompensation, 317000)
+	}
+}

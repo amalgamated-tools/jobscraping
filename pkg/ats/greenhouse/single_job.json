@@ -19,7 +19,15 @@
     "updated_at": "2025-12-23T12:51:05-05:00",
     "requisition_id": "2025 - P1902",
     "title": "Customer Success Manager II, Mid-Market",
-    "pay_input_ranges": [],
+    "pay_input_ranges": [
+        {
+            "min_cents": 6500000,
+            "max_cents": 7000000,
+            "currency_type": "USD",
+            "title": "The reasonably estimated yearly salary for this role at Datadog is:",
+            "blurb": "We offer a competitive salary and equity package, and may include variable compensation. Actual compensation is based on factors such as the candidate's skills, qualifications, and experience. In addition, Datadog offers a wide range of best in class, comprehensive and inclusive employee benefits for this role including healthcare, dental, parental planning, and mental health benefits, a 401(k) plan and match, paid time off, fitness reimbursements, and a discounted employee stock purchase plan."
+        }
+    ],
     "company_name": "Greenhouse",
     "first_published": "2025-12-22T10:33:13-05:00",
     "language": "en",
