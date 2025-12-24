@@ -71,6 +71,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 	}
 
 	slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
+
 	return job, nil
 }
 
