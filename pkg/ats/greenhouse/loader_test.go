@@ -49,8 +49,8 @@ func Test_parseSingleGreenhouseJob(t *testing.T) {
 		t.Errorf("parseGreenhouseJob() DatePosted is zero")
 	}
 
-	if job.CompensationUnit != "$" {
-		t.Errorf("parseGreenhouseJob() CompensationUnit = %v, want %v", job.CompensationUnit, "$")
+	if job.CompensationUnit != "USD" {
+		t.Errorf("parseGreenhouseJob() CompensationUnit = %v, want %v", job.CompensationUnit, "USD")
 	}
 
 	if job.MinCompensation != 6500000 {

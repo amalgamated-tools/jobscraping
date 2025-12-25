@@ -97,6 +97,11 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			}
 
 			job.Location = location
+			job.LocationType = models.ParseLocationType(location)
+
+			if job.LocationType == models.UnknownLocation {
+				job.ProcessLocationType([]string{location})
+			}
 		case "metadata":
 			// an array of objects with key and value fields
 			_, _ = jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
@@ -152,11 +157,6 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			if err == nil {
 				job.CompensationUnit = currencyType
 			}
-			// An array of objects, each containing min_cents, max_cents, currency_type, title, and blurb.
-			// "minCompensationInCents": {"pay_input_ranges", "[0]", "min_cents"},
-			// "maxCompensationInCents": {"pay_input_ranges", "[0]", "max_cents"},
-			// "compensationUnit":       {"pay_input_ranges", "[0]", "currency_type"},
-			// "payBlurb":               {"pay_input_ranges", "[0]", "blurb"},
 		case "company_name":
 			job.AddMetadata("company_name", string(value))
 		case "first_published":
