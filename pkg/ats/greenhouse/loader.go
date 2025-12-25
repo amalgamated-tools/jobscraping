@@ -17,7 +17,7 @@ var (
 	greenhouseJobURL     = "https://boards-api.greenhouse.io/v1/boards/%s/jobs/%d?content=true&pay_transparency=true"
 )
 
-// ScrapeCompany scrapes all jobs for a given company from Ashby ATS.
+// ScrapeCompany scrapes all jobs for a given company from Greenhouse ATS.
 func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, error) {
 	slog.DebugContext(ctx, "Scraping company", slog.String("ats", "greenhouse"), slog.String("company_name", companyName))
 
@@ -36,7 +36,7 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 	_, err = jsonparser.ArrayEach(body, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 		job, jerr := parseGreenhouseJob(ctx, value)
 		if jerr != nil {
-			slog.ErrorContext(ctx, "Error parsing Ashby job from jobs array", slog.Any("error", jerr))
+			slog.ErrorContext(ctx, "Error parsing Greenhouse job from jobs array", slog.Any("error", jerr))
 			return
 		}
 
@@ -51,9 +51,9 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 	return jobs, nil
 }
 
-// ScrapeJob scrapes an individual job from Ashby ATS given the company name and job ID.
+// ScrapeJob scrapes an individual job from Greenhouse ATS given the company name and job ID.
 func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, error) {
-	slog.DebugContext(ctx, "Scraping individual job", slog.String("ats", "ashby"), slog.String("company_name", companyName), slog.String("job_id", jobID))
+	slog.DebugContext(ctx, "Scraping individual job", slog.String("ats", "greenhouse"), slog.String("company_name", companyName), slog.String("job_id", jobID))
 
 	// The URL is like https://boards-api.greenhouse.io/v1/boards/{companyName}/jobs/{jobID}?content=true
 	jobURL := fmt.Sprintf(greenhouseJobURL, companyName, jobID)
