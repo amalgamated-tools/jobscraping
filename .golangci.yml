@@ -8,6 +8,7 @@ linters:
     - exhaustruct
     - gochecknoglobals
     - gocognit
+    - gocyclo
     - lll
     - nlreturn
     - tagliatelle

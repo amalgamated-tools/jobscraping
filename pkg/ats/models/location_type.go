@@ -71,6 +71,11 @@ func (j *Job) ProcessLocationType(locations []string) { //nolint:cyclop
 				j.IsRemote = true
 
 				return
+			case strings.Contains(strings.ToLower(location), "anywhere"):
+				j.LocationType = RemoteLocation
+				j.IsRemote = true
+
+				return
 			case strings.Contains(strings.ToLower(location), "onsite"):
 				j.LocationType = OnsiteLocation
 				return

@@ -1,0 +1,63 @@
+package greenhouse
+
+import (
+	"context"
+	_ "embed"
+	"testing"
+
+	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
+)
+
+//go:embed single_job.json
+var singleJob string
+
+func Test_parseSingleGreenhouseJob(t *testing.T) {
+	t.Parallel()
+
+	job, err := parseGreenhouseJob(context.Background(), []byte(singleJob))
+	if err != nil {
+		t.Fatalf("parseGreenhouseJob() error = %v", err)
+	}
+
+	if job.SourceID != "7454336" {
+		t.Errorf("parseGreenhouseJob() SourceID = %v, want %v", job.SourceID, "7454336")
+	}
+
+	if job.Title != "Customer Success Manager II, Mid-Market" {
+		t.Errorf("parseGreenhouseJob() Title = %v, want %v", job.Title, "Customer Success Manager II, Mid-Market")
+	}
+
+	if job.Department != models.CustomerSuccessSupport {
+		t.Errorf("parseGreenhouseJob() Department = %v, want %v", job.Department, "Customer Success and Support")
+	}
+	// if !strings.EqualFold(strings.Join(job.GetMetadata("team"), ","), "EMEA Engineering") {
+	// t.Errorf("parseGreenhouseJob() team metadata = %v, want %v", job.GetMetadata("team"), "EMEA Engineering")
+	// }
+	if job.EmploymentType != models.FullTime {
+		t.Errorf("parseGreenhouseJob() EmploymentType = %v, want %v", job.EmploymentType, "FullTime")
+	}
+
+	if job.Location != "Anywhere in the United States" {
+		t.Errorf("parseGreenhouseJob() Location = %v, want %v", job.Location, "Anywhere in the United States")
+	}
+
+	if !job.IsRemote {
+		t.Errorf("parseGreenhouseJob() IsRemote = %v, want %v", job.IsRemote, true)
+	}
+
+	if job.DatePosted.IsZero() {
+		t.Errorf("parseGreenhouseJob() DatePosted is zero")
+	}
+
+	if job.CompensationUnit != "USD" {
+		t.Errorf("parseGreenhouseJob() CompensationUnit = %v, want %v", job.CompensationUnit, "USD")
+	}
+
+	if job.MinCompensation != 6500000 {
+		t.Errorf("parseGreenhouseJob() MinCompensation = %v, want %v", job.MinCompensation, 6500000)
+	}
+
+	if job.MaxCompensation != 7000000 {
+		t.Errorf("parseGreenhouseJob() MaxCompensation = %v, want %v", job.MaxCompensation, 7000000)
+	}
+}

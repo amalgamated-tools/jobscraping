@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	models "github.com/amalgamated-tools/jobscraping/pkg/ats/models"
-	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
 )
 
 //go:embed companies_job.json
@@ -67,8 +66,8 @@ func Test_parseAshbyJob(t *testing.T) {
 		t.Errorf("parseAshbyJob() URL = %v, want %v", job.URL, "https://jobs.ashbyhq.com/ashby/6765ef2e-7905-4fbc-b941-783049e7835f")
 	}
 
-	if job.CompensationUnit == nil || helpers.StringValue(job.CompensationUnit) != "€" {
-		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", helpers.StringValue(job.CompensationUnit), "YEAR")
+	if job.CompensationUnit != "€" {
+		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", job.CompensationUnit, "€")
 	}
 
 	if job.MinCompensation != 185000 {
@@ -124,8 +123,8 @@ func Test_parseSingleAshbyJob(t *testing.T) {
 		t.Errorf("parseAshbyJob() DatePosted is zero")
 	}
 
-	if job.CompensationUnit == nil || helpers.StringValue(job.CompensationUnit) != "€" {
-		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", helpers.StringValue(job.CompensationUnit), "YEAR")
+	if job.CompensationUnit != "€" {
+		t.Errorf("parseAshbyJob() CompensationUnit = %v, want %v", job.CompensationUnit, "€")
 	}
 
 	if job.MinCompensation != 185000 {
