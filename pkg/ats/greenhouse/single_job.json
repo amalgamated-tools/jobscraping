@@ -14,7 +14,34 @@
     "location": {
         "name": "Anywhere in the United States"
     },
-    "metadata": null,
+    "metadata": [
+        {
+            "id": 4443582003,
+            "name": "Employment Method",
+            "value": null,
+            "value_type": "single_select"
+        },
+        {
+            "id": 18837559003,
+            "name": "Target region for posting",
+            "value": [
+                "EMEA"
+            ],
+            "value_type": "multi_select"
+        },
+        {
+            "id": 18850043003,
+            "name": "Target countries for posting",
+            "value": [
+                "Greece",
+                "Hungary",
+                "Latvia",
+                "Poland",
+                "Romania"
+            ],
+            "value_type": "multi_select"
+        }
+    ],
     "id": 7454336,
     "updated_at": "2025-12-23T12:51:05-05:00",
     "requisition_id": "2025 - P1902",

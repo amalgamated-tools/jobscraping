@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
 	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
@@ -77,7 +78,8 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 
 func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 	job := &models.Job{
-		Source: "greenhouse",
+		Source:     "greenhouse",
+		Department: models.Unsure,
 	}
 	job.SetSourceData(data)
 
@@ -87,8 +89,6 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			job.URL = string(value)
 		case "internal_job_id":
 			job.AddMetadata("internal_job_id", string(value))
-		case "id":
-			job.SourceID = string(value)
 		case "location":
 			location, err := jsonparser.GetString(value, "name")
 			if err != nil {
@@ -97,11 +97,61 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			}
 
 			job.Location = location
+		case "metadata":
+			// an array of objects with key and value fields
+			_, _ = jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
+				metaKey, err := jsonparser.GetString(value, "name")
+				if err != nil {
+					slog.ErrorContext(ctx, "Error parsing metadata key", slog.Any("error", err))
+					// this is not fatal, continue
+				}
+
+				metaID, err := jsonparser.GetInt(value, "id")
+				if err != nil {
+					slog.ErrorContext(ctx, "Error parsing metadata id", slog.Any("error", err))
+					// this is not fatal, continue
+				}
+
+				// if we don't have a key or id, skip
+				if metaKey == "" && metaID == 0 {
+					return
+				}
+
+				if metaKey == "" {
+					metaKey = strconv.FormatInt(metaID, 10)
+				}
+
+				metaValue, _, _, err := jsonparser.Get(value, "value")
+				if err != nil {
+					slog.ErrorContext(ctx, "Error parsing metadata value", slog.Any("error", err))
+					return
+				}
+
+				job.AddMetadata(metaKey, string(metaValue))
+			})
+		case "id":
+			job.SourceID = string(value)
+		case "updated_at":
+			job.AddMetadata("updated_at", string(value))
 		case "requisition_id":
 			job.AddMetadata("requisition_id", string(value))
 		case "title":
 			job.Title = string(value)
 		case "pay_input_ranges":
+			mixCents, err := jsonparser.GetInt(value, "[0]", "min_cents")
+			if err == nil {
+				job.MinCompensation = float64(mixCents)
+			}
+
+			maxCents, err := jsonparser.GetInt(value, "[0]", "max_cents")
+			if err == nil {
+				job.MaxCompensation = float64(maxCents)
+			}
+
+			currencyType, err := jsonparser.GetString(value, "[0]", "currency_type")
+			if err == nil {
+				job.CompensationUnit = currencyType
+			}
 			// An array of objects, each containing min_cents, max_cents, currency_type, title, and blurb.
 			// "minCompensationInCents": {"pay_input_ranges", "[0]", "min_cents"},
 			// "maxCompensationInCents": {"pay_input_ranges", "[0]", "max_cents"},
@@ -111,11 +161,31 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			job.AddMetadata("company_name", string(value))
 		case "first_published":
 			job.ProcessDatePosted(ctx, value)
-		case "departments":
-			job.Department = models.ParseDepartment(string(value))
-		case "offices":
+		case "language":
+			job.AddMetadata("language", string(value))
 		case "content":
 			job.Description = string(value)
+		case "departments":
+			_, _ = jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
+				// get the name
+				deptName, err := jsonparser.GetString(value, "name")
+				if err != nil {
+					slog.ErrorContext(ctx, "Error getting department name", slog.Any("error", err))
+					return
+				}
+
+				if job.DepartmentRaw == "" {
+					// we haven't set it yet
+					job.DepartmentRaw = deptName
+					job.Department = models.ParseDepartment(deptName)
+				} else if job.Department == models.Unsure {
+					job.Department = models.ParseDepartment(deptName)
+				}
+
+				job.AddMetadata("department", deptName)
+			})
+		case "offices":
+
 		default:
 			job.AddMetadata(string(key), string(value))
 		}

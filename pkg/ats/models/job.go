@@ -12,15 +12,15 @@ import (
 // Job represents a job posting with various attributes.
 type Job struct {
 	URL              string         `json:"url"`
-	CompensationUnit *string        `json:"compensation_unit"`
+	CompensationUnit string         `json:"compensation_unit"`
 	DatePosted       time.Time      `json:"date_posted"`
 	Department       Department     `json:"department"`
+	DepartmentRaw    string         `json:"department_raw,omitempty"`
 	Description      string         `json:"description"`
 	EmploymentType   EmploymentType `json:"employment_type,omitempty"`
 	Equity           EquityType     `json:"equity,omitempty"`
 	IsRemote         bool           `json:"is_remote"`
 	Location         string         `json:"location,omitempty"`
-	LocationAddress  *string        `json:"location_address"`
 	LocationType     LocationType   `json:"location_type,omitempty"`
 	MaxCompensation  float64        `json:"max_compensation"`
 	MinCompensation  float64        `json:"min_compensation"`

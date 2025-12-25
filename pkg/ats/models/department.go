@@ -1,6 +1,9 @@
 package models
 
-import "strings"
+import (
+	"log/slog"
+	"strings"
+)
 
 // Department represents various departments within a company.
 type Department int64
@@ -61,7 +64,7 @@ func (d Department) String() string {
 
 // ParseDepartment converts a string representation of a department to its corresponding Department constant.
 func ParseDepartment(dept string) Department { //nolint:cyclop
-	switch strings.ToLower(dept) {
+	switch strings.ToLower(strings.TrimSpace(dept)) {
 	case "ai":
 		return AI
 	case "corporate it", "corporate":
@@ -87,6 +90,7 @@ func ParseDepartment(dept string) Department { //nolint:cyclop
 	case "software engineering", "engineering", "dev", "development":
 		return SoftwareEngineering
 	default:
+		slog.Warn("Unknown department encountered", slog.String("department", dept))
 		return Unsure // Default to Unsure if unknown
 	}
 }

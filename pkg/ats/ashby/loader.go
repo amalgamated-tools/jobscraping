@@ -133,6 +133,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 			job.Title = string(value)
 		case "department":
 			job.Department = models.ParseDepartment(string(value))
+			job.DepartmentRaw = string(value)
 		case "team":
 			job.AddMetadata("team", string(value))
 		case "employmentType":
@@ -189,7 +190,7 @@ func parseCompanyJob(ctx context.Context, job *models.Job) error {
 			}
 
 			if comp.Currency != "" {
-				job.CompensationUnit = helpers.Ptr(comp.Currency)
+				job.CompensationUnit = comp.Currency
 			}
 
 			if comp.OffersEquity {
@@ -222,6 +223,7 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 			job.Location = string(value)
 		case "departmentName":
 			job.Department = models.ParseDepartment(string(value))
+			job.DepartmentRaw = string(value)
 		case "workplaceType":
 			// possible values: REMOTE, HYBRID, ONSITE
 			workplaceType, err := jsonparser.ParseString(value)
@@ -270,7 +272,7 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 			}
 
 			if comp.Currency != "" {
-				job.CompensationUnit = helpers.Ptr(comp.Currency)
+				job.CompensationUnit = comp.Currency
 			}
 
 			if comp.OffersEquity {
