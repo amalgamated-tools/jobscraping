@@ -4,7 +4,6 @@ package main
 import (
 	"context"
 	_ "embed"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -56,6 +55,7 @@ func main() {
 		"careportalinc",
 	}
 	locations := make(map[string]bool)
+
 	for _, company := range companies {
 		// The URL is like https://boards-api.greenhouse.io/v1/boards/{companyName}/jobs?content=true
 		companyURL := fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true&pay_transparency=true", company)
@@ -67,12 +67,13 @@ func main() {
 			continue
 		}
 
-		jsonparser.ArrayEach(body, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		_, _ = jsonparser.ArrayEach(body, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 			location, err := jsonparser.GetString(value, "location", "name")
 			if err != nil {
 				slog.ErrorContext(ctx, "Error getting job title", slog.Any("error", err))
 				return
 			}
+
 			locations[location] = true
 			slog.InfoContext(ctx, "Job location", slog.String("company", company), slog.String("location", location))
 		}, "jobs")
@@ -86,17 +87,17 @@ func main() {
 		// slog.InfoContext(ctx, "Wrote jobs to file", slog.String("file", fmt.Sprintf("%s_jobs.json", company)))
 	}
 
-	jsonLocations, err := json.MarshalIndent(locations, " ", "  ")
-	if err != nil {
-		slog.ErrorContext(ctx, "Error marshaling locations to JSON", slog.Any("error", err))
-		return
-	}
+	// jsonLocations, err := json.MarshalIndent(locations, " ", "  ")
+	// if err != nil {
+	// 	slog.ErrorContext(ctx, "Error marshaling locations to JSON", slog.Any("error", err))
+	// 	return
+	// }
 
-	err = os.WriteFile("locations.json", jsonLocations, 0644)
-	if err != nil {
-		slog.ErrorContext(ctx, "Error writing locations JSON to file", slog.String("file", "locations.json"), slog.Any("error", err))
-		return
-	}
+	// err = os.WriteFile("locations.json", jsonLocations, 0644)
+	// if err != nil {
+	// 	slog.ErrorContext(ctx, "Error writing locations JSON to file", slog.String("file", "locations.json"), slog.Any("error", err))
+	// 	return
+	// }
 	// slog.InfoContext(ctx, "Scraped company", slog.Int("job_count", len(jobs)))
 
 	// job, err := ashby.ScrapeJob(ctx, "ashby", "6765ef2e-7905-4fbc-b941-783049e7835f")
