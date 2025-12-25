@@ -9,6 +9,8 @@ import (
 	"github.com/buger/jsonparser"
 )
 
+const millisecondsToSeconds = 1000
+
 // Job represents a job posting with various attributes.
 type Job struct {
 	URL              string         `json:"url"`
@@ -88,6 +90,29 @@ func (j *Job) SetSourceData(body []byte) {
 
 // ProcessDatePosted processes and sets the DatePosted field from a JSON value.
 func (j *Job) ProcessDatePosted(ctx context.Context, value []byte) {
+	// let's see if this is an integer (unix timestamp)
+	intValue, err := jsonparser.ParseInt(value)
+	if err == nil {
+		// assume this is a unix timestamp in seconds
+		datePosted := time.Unix(intValue, 0).In(time.UTC)
+		// let's make sure this is a date in the past
+		if datePosted.Before(time.Now().In(time.UTC)) {
+			// it is, set it
+			j.DatePosted = datePosted
+			return
+		}
+
+		slog.ErrorContext(ctx, "Parsed publishedDate is in the future", slog.Time("publishedDate", datePosted))
+		// this is probably in milliseconds, try again
+		datePosted = time.Unix(intValue/millisecondsToSeconds, 0).In(time.UTC)
+
+		if datePosted.Before(time.Now().In(time.UTC)) {
+			j.DatePosted = datePosted
+			return
+		}
+	}
+
+	// try parsing as a string
 	stringValue, err := jsonparser.ParseString(value)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error parsing publishedDate", slog.Any("error", err))
