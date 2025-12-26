@@ -166,9 +166,9 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 		case "content":
 			job.Description = string(value)
 		case "departments":
-			_, _ = jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
+			_, _ = jsonparser.ArrayEach(value, func(deptValue []byte, _ jsonparser.ValueType, _ int, _ error) {
 				// get the name
-				deptName, err := jsonparser.GetString(value, "name")
+				deptName, err := jsonparser.GetString(deptValue, "name")
 				if err != nil {
 					slog.ErrorContext(ctx, "Error getting department name", slog.Any("error", err))
 					return
@@ -185,7 +185,7 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 				job.AddMetadata("department", deptName)
 			})
 		case "offices":
-
+			job.AddMetadata("offices", string(value))
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
