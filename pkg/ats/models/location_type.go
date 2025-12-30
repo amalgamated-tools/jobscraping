@@ -98,7 +98,7 @@ func ParseLocationType(value string) LocationType {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "remote", "telecommute":
 		return RemoteLocation
-	case "onsite":
+	case "onsite", "in_office":
 		return OnsiteLocation
 	case "hybrid":
 		return HybridLocation
