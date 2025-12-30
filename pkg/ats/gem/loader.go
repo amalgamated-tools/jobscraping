@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
@@ -34,7 +35,7 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 	}
 
 	_, err = jsonparser.ArrayEach(body, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
-		job, jerr := parseGemJob(ctx, value)
+		job, jerr := parseGemCompanyJob(ctx, value)
 		if jerr != nil {
 			slog.ErrorContext(ctx, "Error parsing Gem job from jobs array", slog.Any("error", jerr))
 			return
@@ -67,10 +68,17 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 		return nil, fmt.Errorf("error getting JSON from Gem job board endpoint: %w", err)
 	}
 
-	return parseGemJob(ctx, bodyText)
+	job, err := parseGemOatsJob(ctx, bodyText)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing Gem job object: %w", err)
+	}
+
+	job.URL = fmt.Sprintf("https://jobs.gem.com/%s/%s", companyName, jobID)
+
+	return job, nil
 }
 
-func parseGemJob(ctx context.Context, data []byte) (*models.Job, error) {
+func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {
 	job := &models.Job{
 		Source:     "gem",
 		Department: models.Unsure,
@@ -94,11 +102,9 @@ func parseGemJob(ctx context.Context, data []byte) (*models.Job, error) {
 					return
 				}
 
-				if job.DepartmentRaw == "" {
+				if job.DepartmentRaw == "" || job.Department == models.Unsure {
 					// we haven't set it yet
 					job.DepartmentRaw = deptName
-					job.Department = models.ParseDepartment(deptName)
-				} else if job.Department == models.Unsure {
 					job.Department = models.ParseDepartment(deptName)
 				}
 
@@ -115,6 +121,132 @@ func parseGemJob(ctx context.Context, data []byte) (*models.Job, error) {
 			job.AddMetadata("gem_id", string(value))
 		case "internal_job_id":
 			job.SourceID = string(value)
+		case "location":
+			locationName, err := jsonparser.GetString(value, "name")
+			if err == nil {
+				job.Location = locationName
+			}
+		case "location_type":
+			job.LocationType = models.ParseLocationType(string(value))
+		case "offices":
+			_, _ = jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
+				// get the name
+				locName, err := jsonparser.GetString(locValue, "name")
+				if err == nil {
+					job.AddMetadata("office_location", locName)
+				}
+
+				locationName, err := jsonparser.GetString(locValue, "location", "name")
+				if err == nil {
+					job.AddMetadata("office_location_name", locationName)
+				}
+			})
+		case "requisition_id":
+			job.AddMetadata("requisition_id", string(value))
+		case "title":
+			job.Title = string(value)
+		case "updated_at":
+			job.AddMetadata("updated_at", string(value))
+		default:
+			job.AddMetadata(string(key), string(value))
+		}
+
+		return nil
+	})
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing Gem job object", slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing Gem job object: %w", err)
+	}
+
+	return job, nil
+}
+
+func parseGemOatsJob(ctx context.Context, data []byte) (*models.Job, error) {
+	job := &models.Job{
+		Source:     "gem",
+		Department: models.Unsure,
+	}
+	job.SetSourceData(data)
+
+	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
+		switch string(key) {
+		case "id":
+			job.AddMetadata("gem_id", string(value))
+		case "title":
+			job.Title = string(value)
+		case "descriptionHtml":
+			job.Description = string(value)
+		case "extId":
+			job.SourceID = string(value)
+		case "firstPublishedTsSec":
+			job.ProcessDatePosted(ctx, value)
+		case "locations":
+			_, _ = jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
+				// get the name
+				locName, err := jsonparser.GetString(locValue, "name")
+				if err == nil && job.Location == "" {
+					job.Location = locName
+				}
+
+				cityName, err := jsonparser.GetString(locValue, "city")
+				if err == nil {
+					job.AddMetadata("location_city", cityName)
+				}
+
+				countryCode, err := jsonparser.GetString(locValue, "isoCountry")
+				if err == nil {
+					job.AddMetadata("location_country", countryCode)
+				}
+
+				isRemote, err := jsonparser.GetBoolean(locValue, "isRemote")
+				if err == nil {
+					job.AddMetadata("location_is_remote", strconv.FormatBool(isRemote))
+				}
+			})
+		case "job":
+			locationType, err := jsonparser.GetString(value, "locationType")
+			if err == nil {
+				job.LocationType = models.ParseLocationType(locationType)
+			}
+
+			employmentType, err := jsonparser.GetString(value, "employmentType")
+			if err == nil {
+				job.EmploymentType = models.ParseEmploymentType(employmentType)
+			}
+
+			deptName, err := jsonparser.GetString(value, "department", "name")
+			if err == nil {
+				job.DepartmentRaw = deptName
+				job.Department = models.ParseDepartment(deptName)
+			}
+
+			teamDisplayName, err := jsonparser.GetString(value, "teamDisplayName")
+			if err == nil {
+				job.AddMetadata("team_display_name", teamDisplayName)
+			}
+
+			_, _ = jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
+				// get the name
+				locName, err := jsonparser.GetString(locValue, "name")
+				if err == nil {
+					job.AddMetadata("job_location_name", locName)
+				}
+
+				cityName, err := jsonparser.GetString(locValue, "city")
+				if err == nil {
+					job.AddMetadata("job_location_city", cityName)
+				}
+
+				countryCode, err := jsonparser.GetString(locValue, "isoCountry")
+				if err == nil {
+					job.AddMetadata("job_location_country", countryCode)
+				}
+
+				isRemote, err := jsonparser.GetBoolean(locValue, "isRemote")
+				if err == nil {
+					job.AddMetadata("job_location_is_remote", strconv.FormatBool(isRemote))
+				}
+			})
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
