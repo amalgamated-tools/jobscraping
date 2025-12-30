@@ -1,0 +1,235 @@
+{
+    "meta": {
+        "totalCount": 12
+    },
+    "result": [
+        {
+            "id": "25",
+            "jobOpeningName": "VP of Growth Marketing (global)",
+            "departmentId": "18602",
+            "departmentLabel": "Growth",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "34",
+            "jobOpeningName": "Infrastructure Engineer (global)",
+            "departmentId": "18649",
+            "departmentLabel": "Data And Infrastructure",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "35",
+            "jobOpeningName": "Product Manager, Ad Network (global)",
+            "departmentId": "18594",
+            "departmentLabel": "Ad Solutions",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "36",
+            "jobOpeningName": "Senior Machine Learning Engineer (global)",
+            "departmentId": "18649",
+            "departmentLabel": "Data And Infrastructure",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "37",
+            "jobOpeningName": "Performance Analyst (global)",
+            "departmentId": "18594",
+            "departmentLabel": "Ad Solutions",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "38",
+            "jobOpeningName": "People Operations Manager (global)",
+            "departmentId": "18606",
+            "departmentLabel": "People Operations",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "39",
+            "jobOpeningName": " Deliverability & Compliance Specialist (global)",
+            "departmentId": "18653",
+            "departmentLabel": "Deliverability And Compliance",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "40",
+            "jobOpeningName": "Senior Software Engineer, Full-stack (global)",
+            "departmentId": "18599",
+            "departmentLabel": "Engineering",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "41",
+            "jobOpeningName": "Growth Analyst (global)",
+            "departmentId": "18649",
+            "departmentLabel": "Data And Infrastructure",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "42",
+            "jobOpeningName": "Senior Customer Success Manager, Ad Solutions (global)",
+            "departmentId": "18594",
+            "departmentLabel": "Ad Solutions",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "43",
+            "jobOpeningName": "Product Marketing Manager (global)",
+            "departmentId": "18602",
+            "departmentLabel": "Growth",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        },
+        {
+            "id": "44",
+            "jobOpeningName": "Social Media Lead (global)",
+            "departmentId": "18602",
+            "departmentLabel": "Growth",
+            "employmentStatusLabel": "Full-Time",
+            "location": {
+                "city": null,
+                "state": null
+            },
+            "atsLocation": {
+                "country": null,
+                "state": null,
+                "province": null,
+                "city": null
+            },
+            "isRemote": null,
+            "locationType": "1"
+        }
+    ]
+}
