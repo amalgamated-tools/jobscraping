@@ -11,9 +11,6 @@ import (
 //go:embed single_job.json
 var singleJob string
 
-//go:embed job_list.json
-var jobList string
-
 func Test_parseRipplingJob(t *testing.T) {
 	t.Parallel()
 
