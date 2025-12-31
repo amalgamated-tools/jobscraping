@@ -89,6 +89,28 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 			if err == nil {
 				job.Description = role
 			}
+		case "workLocations":
+			_, jerr := jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
+				location := string(locValue)
+				if job.Location == "" {
+					job.Location = location
+				}
+
+				slog.DebugContext(ctx, "Parsed location", slog.String("location", location))
+				job.AddMetadata("workLocations", location)
+			})
+			if jerr != nil {
+				slog.ErrorContext(ctx, "Error parsing workLocations array", slog.Any("error", jerr))
+			}
+		case "department":
+			name, err := jsonparser.GetString(value, "name")
+			if err != nil {
+				slog.ErrorContext(ctx, "Error parsing department name", slog.Any("error", err))
+				return nil
+			}
+
+			job.Department = models.ParseDepartment(name)
+			job.DepartmentRaw = name
 		case "employmentType":
 			label, err := jsonparser.GetString(value, "label")
 			if err != nil {
@@ -97,9 +119,14 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 			}
 
 			job.EmploymentType = models.ParseEmploymentType(label)
+		case "createdOn":
+			job.ProcessDatePosted(ctx, value)
+		case "url":
+			job.URL = string(value)
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
+
 		return nil
 	})
 	if err != nil {
