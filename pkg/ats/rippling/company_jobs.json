@@ -1,0 +1,128 @@
+{
+    "items": [
+        {
+            "id": "698a497a-ab01-48dc-9517-3d25704cc32c",
+            "name": "Finance Analyst (Contractor)",
+            "url": "https://ats.rippling.com/smartwyre/jobs/698a497a-ab01-48dc-9517-3d25704cc32c",
+            "department": {
+                "name": "Corporate"
+            },
+            "locations": [
+                {
+                    "name": "Remote (Uruguay)",
+                    "country": "Uruguay",
+                    "countryCode": "UY",
+                    "state": "",
+                    "stateCode": null,
+                    "city": "",
+                    "workplaceType": "REMOTE"
+                }
+            ],
+            "language": "en-US"
+        },
+        {
+            "id": "698a497a-ab01-48dc-9517-3d25704cc32c",
+            "name": "Finance Analyst (Contractor)",
+            "url": "https://ats.rippling.com/smartwyre/jobs/698a497a-ab01-48dc-9517-3d25704cc32c",
+            "department": {
+                "name": "Corporate"
+            },
+            "locations": [
+                {
+                    "name": "Remote (Argentina)",
+                    "country": "Argentina",
+                    "countryCode": "AR",
+                    "state": "",
+                    "stateCode": null,
+                    "city": "",
+                    "workplaceType": "REMOTE"
+                }
+            ],
+            "language": "en-US"
+        },
+        {
+            "id": "698a497a-ab01-48dc-9517-3d25704cc32c",
+            "name": "Finance Analyst (Contractor)",
+            "url": "https://ats.rippling.com/smartwyre/jobs/698a497a-ab01-48dc-9517-3d25704cc32c",
+            "department": {
+                "name": "Corporate"
+            },
+            "locations": [
+                {
+                    "name": "Remote (South Africa)",
+                    "country": "South Africa",
+                    "countryCode": "ZA",
+                    "state": "",
+                    "stateCode": null,
+                    "city": "",
+                    "workplaceType": "REMOTE"
+                }
+            ],
+            "language": "en-US"
+        },
+        {
+            "id": "88bbcae3-73c3-439b-8442-9088406470a1",
+            "name": "Director, Data Integrations and Onboarding Automation",
+            "url": "https://ats.rippling.com/smartwyre/jobs/88bbcae3-73c3-439b-8442-9088406470a1",
+            "department": {
+                "name": "Professional Services & Customer Success"
+            },
+            "locations": [
+                {
+                    "name": "Remote (United States)",
+                    "country": "United States",
+                    "countryCode": "US",
+                    "state": "",
+                    "stateCode": null,
+                    "city": "",
+                    "workplaceType": "REMOTE"
+                }
+            ],
+            "language": "en-US"
+        },
+        {
+            "id": "d01153db-cefb-4582-9c17-3fe8c431b4b4",
+            "name": "Enterprise Account Executive",
+            "url": "https://ats.rippling.com/smartwyre/jobs/d01153db-cefb-4582-9c17-3fe8c431b4b4",
+            "department": {
+                "name": "Sales"
+            },
+            "locations": [
+                {
+                    "name": "Remote (United States)",
+                    "country": "United States",
+                    "countryCode": "US",
+                    "state": "",
+                    "stateCode": null,
+                    "city": "",
+                    "workplaceType": "REMOTE"
+                }
+            ],
+            "language": "en-US"
+        },
+        {
+            "id": "a10ec2c7-f004-4e99-9c39-00fe58ebba9c",
+            "name": "Partner Manager",
+            "url": "https://ats.rippling.com/smartwyre/jobs/a10ec2c7-f004-4e99-9c39-00fe58ebba9c",
+            "department": {
+                "name": "Sales"
+            },
+            "locations": [
+                {
+                    "name": "Remote (United States)",
+                    "country": "United States",
+                    "countryCode": "US",
+                    "state": "",
+                    "stateCode": null,
+                    "city": "",
+                    "workplaceType": "REMOTE"
+                }
+            ],
+            "language": "en-US"
+        }
+    ],
+    "page": 0,
+    "pageSize": 20,
+    "totalItems": 6,
+    "totalPages": 1
+}
