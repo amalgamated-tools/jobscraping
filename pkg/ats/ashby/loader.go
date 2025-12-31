@@ -215,6 +215,35 @@ func parseSingleJob(ctx context.Context, job *models.Job) error {
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
+		case "linkedData":
+			// linkedData is a JSON-LD object, we can try to parse it for more info
+			jerr := jsonparser.ObjectEach(value, func(ldKey []byte, ldValue []byte, _ jsonparser.ValueType, _ int) error {
+				switch string(ldKey) {
+				case "hiringOrganization":
+					orgName, err := jsonparser.GetString(ldValue, "name")
+					if err == nil {
+						job.Company.Name = orgName
+					}
+
+					sameAs, err := jsonparser.GetString(ldValue, "sameAs")
+					if err == nil {
+						job.Company.HomepageURL = helpers.Ptr(sameAs)
+					}
+
+					logo, err := jsonparser.GetString(ldValue, "logo")
+					if err == nil {
+						job.Company.LogoURL = helpers.Ptr(logo)
+					}
+				default:
+					job.AddMetadata("linked_data_"+string(ldKey), string(ldValue))
+				}
+
+				return nil
+			})
+			if jerr != nil {
+				slog.ErrorContext(ctx, "Error parsing linkedData object", slog.Any("error", jerr))
+				return fmt.Errorf("error parsing linkedData object: %w", jerr)
+			}
 		case "id":
 			job.SourceID = string(value)
 		case "title":

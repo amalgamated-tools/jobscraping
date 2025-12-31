@@ -14,6 +14,7 @@ const millisecondsToSeconds = 1000
 // Job represents a job posting with various attributes.
 type Job struct {
 	URL              string         `json:"url"`
+	Company          Company        `json:"company"`
 	CompensationUnit string         `json:"compensation_unit"`
 	DatePosted       time.Time      `json:"date_posted"`
 	Department       Department     `json:"department"`
