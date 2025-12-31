@@ -87,82 +87,10 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 }
 
 func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
-	job := &models.Job{
-		Source: "ashby",
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("ashby", data)
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
-		case "linkedData":
-			// linkedData is a JSON-LD object, we can try to parse it for more info
-			jerr := jsonparser.ObjectEach(value, func(ldKey []byte, ldValue []byte, _ jsonparser.ValueType, _ int) error {
-				switch string(ldKey) {
-				case "hiringOrganization":
-					orgName, err := jsonparser.GetString(ldValue, "name")
-					if err == nil {
-						job.Company.Name = orgName
-					}
-
-					sameAs, err := jsonparser.GetString(ldValue, "sameAs")
-					if err == nil {
-						job.Company.HomepageURL = helpers.Ptr(sameAs)
-					}
-
-					logo, err := jsonparser.GetString(ldValue, "logo")
-					if err == nil {
-						job.Company.LogoURL = helpers.Ptr(logo)
-					}
-				default:
-					job.AddMetadata("linked_data_"+string(ldKey), string(ldValue))
-				}
-
-				return nil
-			})
-			if jerr != nil {
-				slog.ErrorContext(ctx, "Error parsing linkedData object", slog.Any("error", jerr))
-				return fmt.Errorf("error parsing linkedData object: %w", jerr)
-			}
-		case "id":
-			job.SourceID = string(value)
-		case "title":
-			job.Title = string(value)
-		case "locationName":
-			job.Location = string(value)
-		case "departmentName":
-			job.Department = models.ParseDepartment(string(value))
-			job.DepartmentRaw = string(value)
-		case "workplaceType":
-			// possible values: REMOTE, HYBRID, ONSITE
-			workplaceType, err := jsonparser.ParseString(value)
-			if err != nil {
-				slog.ErrorContext(ctx, "Error parsing workplaceType", slog.Any("error", err))
-				return fmt.Errorf("error parsing workplaceType: %w", err)
-			}
-
-			if strings.EqualFold(workplaceType, "Remote") {
-				job.IsRemote = true
-			} else {
-				job.IsRemote = false
-			}
-		case "secondaryLocationNames":
-			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
-				job.AddMetadata("secondary_location", string(value))
-			})
-			if jerr != nil {
-				slog.ErrorContext(ctx, "Error parsing secondaryLocationNames", slog.Any("error", jerr))
-				return fmt.Errorf("error parsing secondaryLocationNames: %w", jerr)
-			}
-		case "publishedDate":
-			job.ProcessDatePosted(ctx, value)
-		case "teamNames":
-			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
-				job.AddMetadata("team", string(value))
-			})
-			if jerr != nil {
-				slog.ErrorContext(ctx, "Error parsing teamNames", slog.Any("error", jerr))
-				return fmt.Errorf("error parsing teamNames: %w", jerr)
-			}
 		case "compensationTierSummary":
 			// summary is like $155K - $190K or €185K - €317K
 			comp := helpers.ParseCompensation(string(value))
@@ -181,6 +109,93 @@ func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
 			if comp.OffersEquity {
 				job.Equity = models.EquityOffered
 			}
+		case "departmentName":
+			job.Department = models.ParseDepartment(string(value))
+			job.DepartmentRaw = string(value)
+		case "descriptionHtml":
+			job.Description = string(value)
+		case "employmentType":
+			job.EmploymentType = models.ParseEmploymentType(string(value))
+		case "id":
+			job.SourceID = string(value)
+		case "linkedData":
+			// linkedData is a JSON-LD object, we can try to parse it for more info
+			jerr := jsonparser.ObjectEach(value, func(ldKey []byte, ldValue []byte, _ jsonparser.ValueType, _ int) error {
+				switch string(ldKey) {
+				case "title":
+					title := string(ldValue)
+					if job.Title == "" {
+						job.Title = title
+					}
+
+				case "hiringOrganization":
+					orgName, err := jsonparser.GetString(ldValue, "name")
+					if err == nil {
+						job.Company.Name = orgName
+					}
+
+					sameAs, err := jsonparser.GetString(ldValue, "sameAs")
+					if err == nil {
+						job.Company.HomepageURL = helpers.Ptr(sameAs)
+					}
+
+					logo, err := jsonparser.GetString(ldValue, "logo")
+					if err == nil {
+						job.Company.LogoURL = helpers.Ptr(logo)
+					}
+				case "jobLocation":
+					location := models.ParseLocation(value)
+					if job.Location == "" {
+						job.Location = location.String()
+					}
+
+					job.AddMetadata("linked_data_location", location.String())
+				default:
+					job.AddMetadata("linked_data_"+string(ldKey), string(ldValue))
+				}
+
+				return nil
+			})
+			if jerr != nil {
+				slog.ErrorContext(ctx, "Error parsing linkedData object", slog.Any("error", jerr))
+				return fmt.Errorf("error parsing linkedData object: %w", jerr)
+			}
+		case "locationName":
+			job.Location = string(value)
+		case "publishedDate":
+			job.ProcessDatePosted(ctx, value)
+		case "secondaryLocationNames":
+			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
+				job.AddMetadata("secondary_location", string(value))
+			})
+			if jerr != nil {
+				slog.ErrorContext(ctx, "Error parsing secondaryLocationNames", slog.Any("error", jerr))
+				return fmt.Errorf("error parsing secondaryLocationNames: %w", jerr)
+			}
+		case "teamNames":
+			_, jerr := jsonparser.ArrayEach(value, func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
+				job.AddMetadata("team", string(value))
+			})
+			if jerr != nil {
+				slog.ErrorContext(ctx, "Error parsing teamNames", slog.Any("error", jerr))
+				return fmt.Errorf("error parsing teamNames: %w", jerr)
+			}
+		case "title":
+			job.Title = string(value)
+		case "workplaceType":
+			// possible values: REMOTE, HYBRID, ONSITE
+			workplaceType, err := jsonparser.ParseString(value)
+			if err != nil {
+				slog.ErrorContext(ctx, "Error parsing workplaceType", slog.Any("error", err))
+				return fmt.Errorf("error parsing workplaceType: %w", err)
+			}
+
+			if strings.EqualFold(workplaceType, "Remote") {
+				job.IsRemote = true
+			} else {
+				job.IsRemote = false
+			}
+
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
