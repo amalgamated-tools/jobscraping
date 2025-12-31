@@ -46,7 +46,6 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 
 		jobs = append(jobs, job)
 	}, "items")
-
 	if err != nil {
 		slog.ErrorContext(ctx, "Error parsing jobs array from Rippling job board endpoint", slog.Any("error", err))
 		return jobs, fmt.Errorf("error parsing jobs array from Rippling job board endpoint: %w", err)
@@ -88,6 +87,21 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 			role, err := jsonparser.GetString(value, "role")
 			if err == nil {
 				job.Description = role
+			}
+
+			company, err := jsonparser.GetString(value, "company")
+			if err == nil {
+				job.Company.Description = helpers.Ptr(company)
+			}
+		case "board":
+			boardURL, err := jsonparser.GetString(value, "boardURL")
+			if err == nil {
+				job.Company.HomepageURL = helpers.Ptr(boardURL)
+			}
+		case "companyName":
+			companyName, err := jsonparser.GetString(value)
+			if err == nil {
+				job.Company.Name = companyName
 			}
 		case "workLocations":
 			_, jerr := jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
