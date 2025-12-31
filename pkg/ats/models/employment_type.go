@@ -84,7 +84,7 @@ func (j *Job) ProcessCommitment(commitments []string) { //nolint:cyclop
 	}
 
 	for _, c := range updatedCommitments {
-		if strings.Contains(c, "part-time") || strings.Contains(c, "part time") {
+		if strings.Contains(c, "part-time") || strings.Contains(c, "part time") || strings.Contains(c, "hourly") {
 			j.EmploymentType = PartTime
 			return
 		}

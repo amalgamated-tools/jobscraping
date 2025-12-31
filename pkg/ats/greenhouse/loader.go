@@ -153,6 +153,12 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			if err == nil {
 				job.CompensationUnit = currencyType
 			}
+
+			title, err := jsonparser.GetString(value, "[0]", "title")
+			if err == nil {
+				job.AddMetadata("compensation_title", title)
+				job.ProcessCommitment([]string{title})
+			}
 		case "company_name":
 			job.AddMetadata("company_name", string(value))
 		case "first_published":

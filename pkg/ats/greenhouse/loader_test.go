@@ -30,9 +30,7 @@ func Test_parseSingleGreenhouseJob(t *testing.T) {
 	if job.Department != models.CustomerSuccessSupport {
 		t.Errorf("parseGreenhouseJob() Department = %v, want %v", job.Department, "Customer Success and Support")
 	}
-	// if !strings.EqualFold(strings.Join(job.GetMetadata("team"), ","), "EMEA Engineering") {
-	// t.Errorf("parseGreenhouseJob() team metadata = %v, want %v", job.GetMetadata("team"), "EMEA Engineering")
-	// }
+
 	if job.EmploymentType != models.FullTime {
 		t.Errorf("parseGreenhouseJob() EmploymentType = %v, want %v", job.EmploymentType, "FullTime")
 	}
