@@ -10,8 +10,8 @@ import (
 // Compensation represents parsed compensation details from a job listing.
 type Compensation struct {
 	Currency     string
-	MinSalary    *int
-	MaxSalary    *int
+	MinSalary    float64
+	MaxSalary    float64
 	OffersEquity bool
 	Parsed       bool
 }
@@ -24,8 +24,8 @@ func ParseCompensation(compensationString string) Compensation {
 
 	result := Compensation{
 		Currency:     "",
-		MinSalary:    nil,
-		MaxSalary:    nil,
+		MinSalary:    0,
+		MaxSalary:    0,
 		OffersEquity: strings.Contains(strings.ToLower(compensationString), "equity"),
 		Parsed:       false,
 	}
@@ -36,25 +36,23 @@ func ParseCompensation(compensationString string) Compensation {
 
 	result.Parsed = true
 
-	parseAmount := func(val string, hasK string) *int {
+	parseAmount := func(val string, hasK string) float64 {
 		if val == "" {
-			return nil
+			return 0
 		}
 
 		val = strings.ReplaceAll(val, ",", "")
 
 		num, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return nil
+			return 0
 		}
 
 		if strings.EqualFold(hasK, "K") {
 			num *= 1000
 		}
 
-		n := int(num)
-
-		return &n
+		return num
 	}
 
 	currency := match[1]
@@ -65,7 +63,7 @@ func ParseCompensation(compensationString string) Compensation {
 	minSalary := parseAmount(match[2], match[3])
 
 	maxSalary := parseAmount(match[5], match[6])
-	if maxSalary == nil {
+	if maxSalary == 0 {
 		maxSalary = minSalary
 	}
 
