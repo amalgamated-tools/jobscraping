@@ -141,8 +141,8 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 		return nil
 	})
 	if err != nil {
-		slog.ErrorContext(ctx, "Error parsing Lever job object", slog.Any("error", err))
-		return nil, fmt.Errorf("error parsing Lever job object: %w", err)
+		slog.ErrorContext(ctx, "Error parsing Rippling job object", slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing Rippling job object: %w", err)
 	}
 
 	return job, nil
