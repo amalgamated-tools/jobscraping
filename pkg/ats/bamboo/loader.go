@@ -96,9 +96,42 @@ func parseBambooJob(ctx context.Context, data []byte) (*models.Job, error) {
 		case "datePosted":
 			job.ProcessDatePosted(ctx, value)
 		case "compensation":
+			compensation := models.ParseCompensation(string(value))
+			if compensation.Parsed {
+				job.CompensationUnit = compensation.Currency
+				job.MinCompensation = compensation.MinSalary
+				job.MaxCompensation = compensation.MaxSalary
+			}
+
 			job.AddMetadata("compensation", string(value))
+		case "locationType":
+			// "0" = in-office, "1" = remote, "2" = hybrid
+			switch string(value) {
+			case "0":
+				job.LocationType = models.OnsiteLocation
+			case "1":
+				job.LocationType = models.RemoteLocation
+			case "2":
+				job.LocationType = models.HybridLocation
+			default:
+				job.LocationType = models.UnknownLocation
+			}
 		case "location":
-			job.Location = string(value)
+			location := models.ParseLocation(value)
+
+			if job.Location == "" {
+				job.Location = location.String()
+			}
+
+			job.AddMetadata("location", location.String())
+		case "atsLocation":
+			location := models.ParseLocation(value)
+
+			if job.Location == "" {
+				job.Location = location.String()
+			}
+
+			job.AddMetadata("atsLocation", location.String())
 		default:
 			job.AddMetadata(string(key), string(value))
 		}

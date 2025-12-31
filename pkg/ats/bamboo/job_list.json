@@ -14,10 +14,10 @@
                 "state": null
             },
             "atsLocation": {
-                "country": null,
-                "state": null,
+                "country": "United States",
+                "state": "Texas",
                 "province": null,
-                "city": null
+                "city": "Waco"
             },
             "isRemote": null,
             "locationType": "1"
