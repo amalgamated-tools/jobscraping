@@ -1,2 +1,3 @@
 .env
 db/jobscraping.db
+bin/cli
