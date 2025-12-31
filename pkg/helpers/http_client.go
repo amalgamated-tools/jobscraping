@@ -101,3 +101,13 @@ func GetJSON(ctx context.Context, url string, headers map[string]string) ([]byte
 
 	return io.ReadAll(resp.Body) //nolint:wrapcheck // we want to return the original error
 }
+
+// SetHTTPClient sets the HTTP client for testing purposes.
+func SetHTTPClient(c *http.Client) {
+	client = c
+}
+
+// ResetHTTPClient resets the HTTP client to the default client.
+func ResetHTTPClient() {
+	client = &http.Client{}
+}

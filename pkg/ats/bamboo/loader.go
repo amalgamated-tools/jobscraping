@@ -47,7 +47,7 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 		return jobs, fmt.Errorf("error parsing jobs array: %w", err)
 	}
 
-	return nil, nil
+	return jobs, nil
 }
 
 // ScrapeJob scrapes an individual job from BambooHR ATS given the company name and job ID.
