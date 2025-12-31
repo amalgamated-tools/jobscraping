@@ -33,7 +33,7 @@ func Test_parseGemCompanyJob(t *testing.T) {
 		t.Errorf("parseGemCompanyJob() DatePosted is zero")
 	}
 
-	if job.Department != models.Unsure {
+	if job.Department != models.UnknownDepartment {
 		t.Errorf("parseGemCompanyJob() Department = %v, want %v", job.Department, models.SoftwareEngineering)
 	}
 
@@ -70,7 +70,7 @@ func Test_parseGemOatsJob(t *testing.T) {
 		t.Errorf("parseGemCompanyJob() DatePosted is zero")
 	}
 
-	if job.Department != models.Unsure {
+	if job.Department != models.UnknownDepartment {
 		t.Errorf("parseGemCompanyJob() Department = %v, want %v", job.Department, models.SoftwareEngineering)
 	}
 

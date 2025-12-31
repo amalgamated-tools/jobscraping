@@ -79,11 +79,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 }
 
 func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {
-	job := &models.Job{
-		Source:     "gem",
-		Department: models.Unsure,
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("gem", data)
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
@@ -102,7 +98,7 @@ func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {
 					return
 				}
 
-				if job.DepartmentRaw == "" || job.Department == models.Unsure {
+				if job.DepartmentRaw == "" || job.Department == models.UnknownDepartment {
 					// we haven't set it yet
 					job.DepartmentRaw = deptName
 					job.Department = models.ParseDepartment(deptName)
@@ -111,10 +107,8 @@ func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {
 				job.AddMetadata("department", deptName)
 			})
 		case "employment_type":
-			employmentType, err := jsonparser.GetString(value, "name")
-			if err == nil {
-				job.EmploymentType = models.ParseEmploymentType(employmentType)
-			}
+			employmentType := string(value)
+			job.EmploymentType = models.ParseEmploymentType(employmentType)
 		case "first_published_at":
 			job.ProcessDatePosted(ctx, value)
 		case "id":
@@ -162,11 +156,7 @@ func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {
 }
 
 func parseGemOatsJob(ctx context.Context, data []byte) (*models.Job, error) {
-	job := &models.Job{
-		Source:     "gem",
-		Department: models.Unsure,
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("gem", data)
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {

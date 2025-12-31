@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ func ParseCompensation(s string) Compensation {
 	}
 
 	if match == nil {
+		slog.Debug("compensation string did not match regex", slog.String("input", s))
 		return result
 	}
 

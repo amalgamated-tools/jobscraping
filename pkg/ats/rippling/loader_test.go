@@ -27,8 +27,8 @@ func Test_parseRipplingJob(t *testing.T) {
 		t.Errorf("parseRipplingJob() Title = %v, want %v", job.Title, "Finance Analyst (Contractor)")
 	}
 
-	if job.Department != models.Unsure {
-		t.Errorf("parseRipplingJob() Department = %v, want %v", job.Department, models.Unsure)
+	if job.Department != models.UnknownDepartment {
+		t.Errorf("parseRipplingJob() Department = %v, want %v", job.Department, models.UnknownDepartment)
 	}
 
 	if job.DepartmentRaw != "Finance" {

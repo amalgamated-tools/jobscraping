@@ -14,7 +14,7 @@ import (
 
 var (
 	greenhouseCompanyURL = "https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true&pay_transparency=true"
-	greenhouseJobURL     = "https://boards-api.greenhouse.io/v1/boards/%s/jobs/%d?content=true&pay_transparency=true"
+	greenhouseJobURL     = "https://boards-api.greenhouse.io/v1/boards/%s/jobs/%s?content=true&pay_transparency=true"
 )
 
 // ScrapeCompany scrapes all jobs for a given company from Greenhouse ATS.
@@ -77,11 +77,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 }
 
 func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
-	job := &models.Job{
-		Source:     "greenhouse",
-		Department: models.Unsure,
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("greenhouse", data)
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
@@ -99,7 +95,7 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			job.Location = location
 			job.LocationType = models.ParseLocationType(location)
 
-			if job.LocationType == models.UnknownLocation {
+			if job.LocationType == models.UnknownLocationType {
 				job.ProcessLocationType([]string{location})
 			}
 		case "metadata":
@@ -178,7 +174,7 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 					// we haven't set it yet
 					job.DepartmentRaw = deptName
 					job.Department = models.ParseDepartment(deptName)
-				} else if job.Department == models.Unsure {
+				} else if job.Department == models.UnknownDepartment {
 					job.Department = models.ParseDepartment(deptName)
 				}
 

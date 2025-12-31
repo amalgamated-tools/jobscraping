@@ -14,15 +14,15 @@ const (
 	OnsiteLocation
 	// HybridLocation represents a hybrid job location.
 	HybridLocation
-	// UnknownLocation represents an unknown or unspecified job location.
-	UnknownLocation
+	// UnknownLocationType represents an unknown or unspecified job location.
+	UnknownLocationType
 )
 
 // ProcessLocationType processes a list of location strings to determine and set the LocationType of the Job.
 func (j *Job) ProcessLocationType(locations []string) { //nolint:cyclop
 	if len(locations) == 0 {
 		// observability.GetGlobalLogger().Debug("No locations provided, setting job location type to Unknown")
-		j.LocationType = UnknownLocation
+		j.LocationType = UnknownLocationType
 		return
 	}
 
@@ -30,20 +30,13 @@ func (j *Job) ProcessLocationType(locations []string) { //nolint:cyclop
 	for _, location := range locations {
 		stringValue := strings.ToLower(strings.TrimSpace(location))
 		if stringValue == "" {
-			// observability.GetGlobalLogger().With(
-			// 	zap.String("location", location),
-			// ).Debug("Empty location string, skipping")
 			continue
 		}
 
 		updatedLocations = append(updatedLocations, stringValue)
 	}
 
-	if j.LocationType != UnknownLocation {
-		// observability.GetGlobalLogger().With(
-		// 	zap.String("location", j.LocationType.String()),
-		// ).Debug("Location type already set, ignoring new value")
-		// we already have a location type set, so we don't override it
+	if j.LocationType != UnknownLocationType {
 		for _, location := range updatedLocations {
 			j.AddMetadata("alternate_locations", location)
 		}
@@ -83,11 +76,8 @@ func (j *Job) ProcessLocationType(locations []string) { //nolint:cyclop
 				j.LocationType = HybridLocation
 				return
 			default:
-				// observability.GetGlobalLogger().With(
-				// 	zap.String("location", location),
-				// ).Warn("Unknown job location type")
 				j.AddMetadata("alternate_locations", location)
-				j.LocationType = UnknownLocation
+				j.LocationType = UnknownLocationType
 			}
 		}
 	}
@@ -103,7 +93,7 @@ func ParseLocationType(value string) LocationType {
 	case "hybrid":
 		return HybridLocation
 	default:
-		return UnknownLocation // Default to Unknown if unknown
+		return UnknownLocationType // Default to Unknown if unknown
 	}
 }
 

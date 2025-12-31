@@ -9,7 +9,7 @@ import (
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
 	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
-	"github.com/buger/jsonparser"
+	"github.com/h2non/gock"
 )
 
 //go:embed single_job.json
@@ -66,28 +66,27 @@ func Test_parseBambooJob(t *testing.T) {
 func TestScrapeCompany(t *testing.T) {
 	t.Parallel()
 
-	// Test parsing the job list data to verify structure
-	var jobIDs []string
+	defer gock.Off() // Flush pending mocks after test execution
 
-	_, err := jsonparser.ArrayEach([]byte(jobList), func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
-		id, err := jsonparser.GetString(value, "id")
-		if err != nil {
-			return
-		}
+	gock.New("https://testcompany.bamboohr.com").
+		Get("/careers/list").
+		Reply(200).
+		JSON(jobList)
 
-		jobIDs = append(jobIDs, id)
-	}, "result")
+	for _, id := range []string{"25", "34", "35"} {
+		gock.New("https://testcompany.bamboohr.com").
+			Get("/careers/" + id + "/detail").
+			Reply(200).
+			JSON(singleJob)
+	}
+
+	jobs, err := ScrapeCompany(context.Background(), "testcompany")
 	if err != nil {
-		t.Fatalf("Error parsing job list: %v", err)
+		t.Fatalf("ScrapeCompany() error = %v", err)
 	}
 
-	if len(jobIDs) != 12 {
-		t.Errorf("Expected 12 jobs in job_list.json, got %d", len(jobIDs))
-	}
-
-	// Verify first job ID
-	if len(jobIDs) > 0 && jobIDs[0] != "25" {
-		t.Errorf("First job ID = %v, want '25'", jobIDs[0])
+	if len(jobs) != 3 {
+		t.Errorf("ScrapeCompany() len(jobs) = %v, want 3", len(jobs))
 	}
 }
 

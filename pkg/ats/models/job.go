@@ -34,7 +34,19 @@ type Job struct {
 	Tags map[string][]string `json:"tags,omitempty"`
 
 	sourceData []byte `json:"-"`
-	// Company *Company `json:"company" db:"company"`
+}
+
+// NewJob creates a new Job instance with the specified source.
+func NewJob(source string, data []byte) *Job {
+	return &Job{
+		sourceData:     data,
+		Source:         source,
+		Company:        Company{},
+		Department:     UnknownDepartment,
+		EmploymentType: UnknownEmploymentType,
+		Equity:         UnknownEquity,
+		LocationType:   UnknownLocationType,
+	}
 }
 
 // AddMetadata adds metadata to the job's tags.
@@ -82,11 +94,6 @@ func (j *Job) GetMetadata(key string) []string {
 // GetSourceData retrieves the raw source data associated with the job.
 func (j *Job) GetSourceData() []byte {
 	return j.sourceData
-}
-
-// SetSourceData sets the raw source data for the job.
-func (j *Job) SetSourceData(body []byte) {
-	j.sourceData = body
 }
 
 // ProcessDatePosted processes and sets the DatePosted field from a JSON value.

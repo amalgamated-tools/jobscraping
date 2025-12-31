@@ -55,7 +55,7 @@ func Test_parseLeverJob(t *testing.T) {
 		t.Errorf("parseLeverJob() LocationType = %v, want %v", job.LocationType, "RemoteLocation")
 	}
 
-	if job.Department != models.Unsure {
+	if job.Department != models.UnknownDepartment {
 		t.Errorf("parseLeverJob() Department = %v, want %v", job.Department, "Unsure")
 	}
 }

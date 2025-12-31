@@ -27,40 +27,9 @@ const (
 	Security
 	// SoftwareEngineering represents the Software Engineering department.
 	SoftwareEngineering
-	// Unsure represents an unknown or unspecified department.
-	Unsure
+	// UnknownDepartment represents an unknown or unspecified department.
+	UnknownDepartment
 )
-
-// DepartmentNames returns a slice of all department names.
-func DepartmentNames() []string {
-	return []string{
-		"AI",
-		"Customer Success and Support",
-		"Data",
-		"Design",
-		"Marketing",
-		"Product Management",
-		"Sales",
-		"Security",
-		"Software Engineering",
-	}
-}
-
-// String returns the string representation of the Department.
-func (d Department) String() string {
-	return [...]string{
-		"Unsure",
-		"AI",
-		"Customer Success and Support",
-		"Data",
-		"Design",
-		"Marketing",
-		"Product Management",
-		"Sales",
-		"Security",
-		"Software Engineering",
-	}[d]
-}
 
 // ParseDepartment converts a string representation of a department to its corresponding Department constant.
 func ParseDepartment(dept string) Department { //nolint:cyclop
@@ -90,7 +59,7 @@ func ParseDepartment(dept string) Department { //nolint:cyclop
 	case "software engineering", "engineering", "dev", "development":
 		return SoftwareEngineering
 	default:
-		slog.Warn("Unknown department encountered", slog.String("department", dept))
-		return Unsure // Default to Unsure if unknown
+		slog.Debug("Unknown department encountered", slog.String("department", dept))
+		return UnknownDepartment // Default to Unsure if unknown
 	}
 }

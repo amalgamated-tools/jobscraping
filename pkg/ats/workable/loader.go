@@ -70,11 +70,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 func parseWorkableJob(ctx context.Context, data []byte) (*models.Job, error) {
 	slog.DebugContext(ctx, "Parsing Workable job data", slog.String("ats", "workable"))
 
-	job := &models.Job{
-		Source:     "workable",
-		Department: models.Unsure,
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("workable", data)
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
@@ -131,7 +127,7 @@ func parseWorkableJob(ctx context.Context, data []byte) (*models.Job, error) {
 					return
 				}
 
-				if job.Department == models.Unsure {
+				if job.Department == models.UnknownDepartment {
 					job.Department = models.ParseDepartment(department)
 				}
 

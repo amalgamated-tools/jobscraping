@@ -66,11 +66,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 }
 
 func parseBambooJob(ctx context.Context, data []byte) (*models.Job, error) {
-	job := &models.Job{
-		Source:     "bamboo",
-		Department: models.Unsure,
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("bamboo", data)
 
 	err := jsonparser.ObjectEach(data, func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
@@ -114,7 +110,7 @@ func parseBambooJob(ctx context.Context, data []byte) (*models.Job, error) {
 			case "2":
 				job.LocationType = models.HybridLocation
 			default:
-				job.LocationType = models.UnknownLocation
+				job.LocationType = models.UnknownLocationType
 			}
 		case "location":
 			location := models.ParseLocation(value)

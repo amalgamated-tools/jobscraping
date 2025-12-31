@@ -76,11 +76,7 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 }
 
 func parseLeverJob(ctx context.Context, data []byte) (*models.Job, error) {
-	job := &models.Job{
-		Source:     "lever",
-		Department: models.Unsure,
-	}
-	job.SetSourceData(data)
+	job := models.NewJob("lever", data)
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
