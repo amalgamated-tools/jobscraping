@@ -1,0 +1,267 @@
+{
+    "total": 8,
+    "results": [
+        {
+            "id": 5356948,
+            "shortcode": "E787796A71",
+            "title": "Open-Source Machine Learning Engineer, AI for Robotics - Paris Office",
+            "remote": false,
+            "location": {
+                "country": "France",
+                "countryCode": "FR",
+                "city": "Paris",
+                "region": "Île-de-France"
+            },
+            "locations": [
+                {
+                    "country": "France",
+                    "countryCode": "FR",
+                    "city": "Paris",
+                    "region": "Île-de-France",
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2025-12-08T00:00:00.000Z",
+            "type": "full",
+            "language": "en",
+            "department": [
+                "Science"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "on_site"
+        },
+        {
+            "id": 4565925,
+            "shortcode": "028EA511F4",
+            "title": "Community ML Research Engineer, non-AI scientific fields - EMEA Remote",
+            "remote": true,
+            "location": {
+                "country": "France",
+                "countryCode": "FR",
+                "city": "Paris",
+                "region": "Île-de-France"
+            },
+            "locations": [
+                {
+                    "country": "France",
+                    "countryCode": "FR",
+                    "city": "Paris",
+                    "region": "Île-de-France",
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2025-11-17T00:00:00.000Z",
+            "type": "full",
+            "language": "en",
+            "department": [
+                "Science"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        },
+        {
+            "id": 4565930,
+            "shortcode": "86FDFE34CA",
+            "title": "Community ML Research Engineer, non-AI scientific fields - US Remote",
+            "remote": true,
+            "location": {
+                "country": "United States",
+                "countryCode": "US",
+                "city": "New York",
+                "region": "New York"
+            },
+            "locations": [
+                {
+                    "country": "United States",
+                    "countryCode": "US",
+                    "city": "New York",
+                    "region": "New York",
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2025-11-17T00:00:00.000Z",
+            "type": "full",
+            "language": "en",
+            "department": [
+                "Science"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        },
+        {
+            "id": 2852138,
+            "shortcode": "A3879724CD",
+            "title": "Cloud Machine Learning Engineer - US remote",
+            "remote": true,
+            "location": {
+                "country": "United States",
+                "countryCode": "US",
+                "city": "",
+                "region": null
+            },
+            "locations": [
+                {
+                    "country": "United States",
+                    "countryCode": "US",
+                    "city": "",
+                    "region": null,
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2025-10-28T00:00:00.000Z",
+            "type": "full",
+            "language": "en",
+            "department": [
+                "Customer Success"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        },
+        {
+            "id": 2490480,
+            "shortcode": "E041344B34",
+            "title": "Senior Node.Js Backend Engineer, Online Payment Systems - EMEA Remote",
+            "remote": true,
+            "location": {
+                "country": "France",
+                "countryCode": "FR",
+                "city": "Paris",
+                "region": "Île-de-France"
+            },
+            "locations": [
+                {
+                    "country": "France",
+                    "countryCode": "FR",
+                    "city": "Paris",
+                    "region": "Île-de-France",
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2025-10-17T00:00:00.000Z",
+            "language": "en",
+            "department": [
+                "Product"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        },
+        {
+            "id": 5229259,
+            "shortcode": "C4F75D40BC",
+            "title": "Senior Node.Js Backend Engineer, Online Payment Systems - US Remote",
+            "remote": true,
+            "location": {
+                "country": "United States",
+                "countryCode": "US",
+                "city": "New York",
+                "region": "New York"
+            },
+            "locations": [
+                {
+                    "country": "United States",
+                    "countryCode": "US",
+                    "city": "New York",
+                    "region": "New York",
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2025-10-17T00:00:00.000Z",
+            "language": "en",
+            "department": [
+                "Product"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        },
+        {
+            "id": 2521239,
+            "shortcode": "56232F23CB",
+            "title": "Open-Source Machine Learning Engineer - International Remote",
+            "remote": true,
+            "location": {
+                "country": "United States",
+                "countryCode": "US",
+                "city": "New York",
+                "region": "New York"
+            },
+            "locations": [
+                {
+                    "country": "United States",
+                    "countryCode": "US",
+                    "city": "New York",
+                    "region": "New York",
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2024-10-17T00:00:00.000Z",
+            "type": "full",
+            "language": "en",
+            "department": [
+                "Open Source"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        },
+        {
+            "id": 2769505,
+            "shortcode": "0BD8C06DB3",
+            "title": "Wild Card",
+            "remote": true,
+            "location": {
+                "country": "United States",
+                "countryCode": "US",
+                "city": "",
+                "region": null
+            },
+            "locations": [
+                {
+                    "country": "United States",
+                    "countryCode": "US",
+                    "city": "",
+                    "region": null,
+                    "hidden": false
+                }
+            ],
+            "state": "published",
+            "isInternal": false,
+            "code": "",
+            "published": "2024-10-17T00:00:00.000Z",
+            "type": "full",
+            "language": "en",
+            "department": [
+                "Wild Card"
+            ],
+            "accountUid": "940cf17f-c078-40ac-95e8-07704e754048",
+            "approvalStatus": "approved",
+            "workplace": "remote"
+        }
+    ]
+}

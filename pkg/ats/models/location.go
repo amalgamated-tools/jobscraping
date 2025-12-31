@@ -52,7 +52,7 @@ func ParseLocation(data []byte) Location {
 		switch string(key) {
 		case "city":
 			location.City = string(value)
-		case "state":
+		case "state", "region":
 			location.State = string(value)
 		case "postalCode":
 			location.PostalCode = string(value)

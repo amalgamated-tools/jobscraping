@@ -25,9 +25,9 @@ const (
 // ParseEmploymentType converts a string representation of an employment type to its corresponding EmploymentType constant.
 func ParseEmploymentType(empType string) EmploymentType {
 	switch strings.ToLower(empType) {
-	case "full_time", "full time", "full-time", "fulltime", "hourly_ft", "salaried_ft":
+	case "full", "full_time", "full time", "full-time", "fulltime", "hourly_ft", "salaried_ft":
 		return FullTime
-	case "part_time", "part time", "part-time", "parttime", "hourly_pt":
+	case "part", "part_time", "part time", "part-time", "parttime", "hourly_pt":
 		return PartTime
 	case "contract", "contractor":
 		return Contract
