@@ -51,7 +51,7 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 		return jobs, fmt.Errorf("error parsing jobs array from Rippling job board endpoint: %w", err)
 	}
 
-	return nil, nil
+	return jobs, nil
 }
 
 // ScrapeJob scrapes an individual job listing from Rippling ATS.
@@ -99,10 +99,7 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 				job.Company.HomepageURL = helpers.Ptr(boardURL)
 			}
 		case "companyName":
-			companyName, err := jsonparser.GetString(value)
-			if err == nil {
-				job.Company.Name = companyName
-			}
+			job.Company.Name = string(value)
 		case "workLocations":
 			_, jerr := jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
 				location := string(locValue)
@@ -144,8 +141,8 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 		return nil
 	})
 	if err != nil {
-		slog.ErrorContext(ctx, "Error parsing Lever job object", slog.Any("error", err))
-		return nil, fmt.Errorf("error parsing Lever job object: %w", err)
+		slog.ErrorContext(ctx, "Error parsing Rippling job object", slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing Rippling job object: %w", err)
 	}
 
 	return job, nil
