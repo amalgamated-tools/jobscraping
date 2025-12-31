@@ -68,14 +68,15 @@ func TestScrapeCompany(t *testing.T) {
 
 	// Test parsing the job list data to verify structure
 	var jobIDs []string
+
 	_, err := jsonparser.ArrayEach([]byte(jobList), func(value []byte, _ jsonparser.ValueType, _ int, _ error) {
 		id, err := jsonparser.GetString(value, "id")
 		if err != nil {
 			return
 		}
+
 		jobIDs = append(jobIDs, id)
 	}, "result")
-
 	if err != nil {
 		t.Fatalf("Error parsing job list: %v", err)
 	}
@@ -94,9 +95,10 @@ func TestScrapeJob(t *testing.T) {
 	t.Parallel()
 
 	// Create a test server that returns the single job JSON
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+
 		_, err := w.Write([]byte(singleJob))
 		if err != nil {
 			t.Fatalf("failed to write response: %v", err)
@@ -106,6 +108,7 @@ func TestScrapeJob(t *testing.T) {
 
 	// Set up HTTP client to use test server
 	helpers.SetHTTPClient(server.Client())
+
 	defer helpers.ResetHTTPClient()
 
 	// Test the parse function directly since URL is hardcoded in ScrapeJob
