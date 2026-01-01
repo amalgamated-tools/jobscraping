@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strconv"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
@@ -13,8 +14,9 @@ import (
 )
 
 var (
-	greenhouseCompanyURL = "https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true&pay_transparency=true"
-	greenhouseJobURL     = "https://boards-api.greenhouse.io/v1/boards/%s/jobs/%s?content=true&pay_transparency=true"
+	greenhouseCompanyURL     = "https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true&pay_transparency=true"
+	greenhouseCompanyInfoURL = "https://job-boards.greenhouse.io/%s?_data=root"
+	greenhouseJobURL         = "https://boards-api.greenhouse.io/v1/boards/%s/jobs/%s?content=true&pay_transparency=true"
 )
 
 // ScrapeCompany scrapes all jobs for a given company from Greenhouse ATS.
@@ -38,6 +40,15 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 		if jerr != nil {
 			slog.ErrorContext(ctx, "Error parsing Greenhouse job from jobs array", slog.Any("error", jerr))
 			return
+		}
+
+		if job.Company.Name == "" {
+			company, err := ScrapeCompanyInfo(ctx, companyName)
+			if err != nil {
+				slog.ErrorContext(ctx, "Error scraping company info for Greenhouse job", slog.String("company_name", companyName), slog.Any("error", err))
+			} else {
+				job.Company = company
+			}
 		}
 
 		slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
@@ -71,9 +82,59 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 		return nil, fmt.Errorf("error parsing Greenhouse job from job endpoint: %w", err)
 	}
 
+	company, err := ScrapeCompanyInfo(ctx, companyName)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error scraping company info for Greenhouse job", slog.String("company_name", companyName), slog.Any("error", err))
+	}
+
+	job.Company = company
+
 	slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
 
 	return job, nil
+}
+
+// ScrapeCompanyInfo scrapes company information for a given company from the Greenhouse ATS.
+func ScrapeCompanyInfo(ctx context.Context, companyName string) (*models.Company, error) {
+	bodyText, err := helpers.GetJSON(
+		ctx,
+		fmt.Sprintf(greenhouseCompanyInfoURL, companyName),
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error getting JSON from Greenhouse company info endpoint: %w", err)
+	}
+
+	company := models.NewCompany()
+	company.Name = companyName
+
+	href, err := jsonparser.GetString(bodyText, "boardConfiguration", "logo", "href")
+	if err == nil {
+		parsedHomepageURL, err := url.Parse(href)
+		if err != nil {
+			slog.ErrorContext(ctx, "Error parsing company homepage URL from Greenhouse company info", slog.String("url", href), slog.Any("error", err))
+			return nil, fmt.Errorf("error parsing company homepage URL from Greenhouse company info: %w", err)
+		}
+
+		company.Homepage = *parsedHomepageURL
+	}
+
+	// we can only get the company logo URL from here
+	logoURL, err := jsonparser.GetString(bodyText, "boardConfiguration", "logo", "url")
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing Greenhouse company info response", slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing Greenhouse company info response: %w", err)
+	}
+
+	parsedLogoURL, err := url.Parse(logoURL)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing company logo URL from Greenhouse company info", slog.String("url", logoURL), slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing company logo URL from Greenhouse company info: %w", err)
+	}
+
+	company.Logo = *parsedLogoURL
+
+	return company, nil
 }
 
 func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
