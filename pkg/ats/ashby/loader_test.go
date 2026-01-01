@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	models "github.com/amalgamated-tools/jobscraping/pkg/ats/models"
+	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
 )
 
 //go:embed single_job.json
@@ -18,6 +19,10 @@ func Test_parseSingleAshbyJob(t *testing.T) {
 	job, err := parseAshbyJob(context.Background(), []byte(singleJob))
 	if err != nil {
 		t.Fatalf("parseAshbyJob() error = %v", err)
+	}
+
+	if job.Source != "ashby" {
+		t.Errorf("parseAshbyJob() Source = %v, want %v", job.Source, "ashby")
 	}
 
 	if job.SourceID != "6765ef2e-7905-4fbc-b941-783049e7835f" {
@@ -32,12 +37,20 @@ func Test_parseSingleAshbyJob(t *testing.T) {
 		t.Errorf("parseAshbyJob() Department = %v, want %v", job.Department, "Engineering")
 	}
 
+	if job.DepartmentRaw != "Engineering" {
+		t.Errorf("parseAshbyJob() DepartmentRaw = %v, want %v", job.DepartmentRaw, "Engineering")
+	}
+
 	if job.EmploymentType != models.FullTime {
 		t.Errorf("parseAshbyJob() EmploymentType = %v, want %v", job.EmploymentType, "FullTime")
 	}
 
 	if job.Location != "Remote - Europe" {
 		t.Errorf("parseAshbyJob() Location = %v, want %v", job.Location, "Remote - Europe")
+	}
+
+	if job.LocationType != models.RemoteLocation {
+		t.Errorf("parseAshbyJob() LocationType = %v, want %v", job.LocationType, models.RemoteLocation)
 	}
 
 	if !job.IsRemote {
@@ -64,5 +77,21 @@ func Test_parseSingleAshbyJob(t *testing.T) {
 
 	if job.MaxCompensation != 317000 {
 		t.Errorf("parseAshbyJob() MaxCompensation = %v, want %v", job.MaxCompensation, 317000)
+	}
+
+	if job.Company.Name != "Ashby" {
+		t.Errorf("parseAshbyJob() Company.Name = %v, want %v", job.Company.Name, "Ashby")
+	}
+
+	if job.Equity != models.EquityOffered {
+		t.Errorf("parseAshbyJob() Equity = %v, want %v", job.Equity, models.EquityOffered)
+	}
+
+	if helpers.StringValue(job.Company.HomepageURL) != "https://www.ashbyhq.com" {
+		t.Errorf("parseAshbyJob() Company.HomepageURL = %v, want %v", helpers.StringValue(job.Company.HomepageURL), "https://www.ashbyhq.com")
+	}
+
+	if helpers.StringValue(job.Company.LogoURL) != "https://www.ashbyhq.com/logo.png" {
+		t.Errorf("parseAshbyJob() Company.LogoURL = %v, want %v", helpers.StringValue(job.Company.LogoURL), "https://www.ashbyhq.com/logo.png")
 	}
 }

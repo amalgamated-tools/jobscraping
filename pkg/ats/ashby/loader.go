@@ -125,6 +125,7 @@ func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
 				case "title":
 					title := string(ldValue)
 					if job.Title == "" {
+						slog.DebugContext(ctx, "Setting job title from linkedData", slog.String("title", title))
 						job.Title = title
 					}
 
@@ -192,6 +193,7 @@ func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
 
 			if strings.EqualFold(workplaceType, "Remote") {
 				job.IsRemote = true
+				job.LocationType = models.RemoteLocation
 			} else {
 				job.IsRemote = false
 			}

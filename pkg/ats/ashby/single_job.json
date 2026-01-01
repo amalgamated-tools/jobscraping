@@ -25,7 +25,7 @@
                     "@type": "Organization",
                     "name": "Ashby",
                     "sameAs": "https://www.ashbyhq.com",
-                    "logo": "https://app.ashbyhq.com/api/images/org-theme-logo/4ea5f68e-c33e-4ac9-831a-e732bee4a303/64810b5d-c23a-403d-8681-24bc4e8a77a2/a1d9b646-5e96-4366-b094-059d21b23ed5.png"
+                    "logo": "https://www.ashbyhq.com/logo.png"
                 },
                 "jobLocation": {
                     "@type": "Place",
