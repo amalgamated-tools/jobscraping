@@ -5,6 +5,7 @@ go 1.25.4
 require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/h2non/gock v1.2.0
+	golang.org/x/net v0.47.0
 	modernc.org/sqlite v1.41.0
 )
 

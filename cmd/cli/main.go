@@ -21,8 +21,8 @@ func main() {
 	// ashbyExample()
 	// bambooExample()
 	// gemExample()
-	greenhouseExample()
-	// leverExample()
+	// greenhouseExample()
+	leverExample()
 	// ripplingExample()
 	// workableExample()
 }
@@ -125,7 +125,7 @@ func leverExample() {
 	}
 
 	for _, job := range jobs {
-		slog.Info("job found", slog.String("title", job.Title), slog.String("location", job.Location), slog.String("url", job.URL))
+		slog.Info("job found", slog.String("title", job.Title), slog.String("location", job.Location), slog.String("url", job.URL), slog.String("company", job.Company.Name))
 	}
 
 	job, err := lever.ScrapeJob(context.Background(), "airalo", jobs[0].SourceID)
@@ -134,7 +134,7 @@ func leverExample() {
 		os.Exit(1)
 	}
 
-	slog.Info("job found", slog.String("title", job.Title), slog.String("location", job.Location), slog.String("url", job.URL))
+	slog.Info("job found", slog.String("title", job.Title), slog.String("location", job.Location), slog.String("url", job.URL), slog.String("company", job.Company.Name))
 }
 
 func ripplingExample() {

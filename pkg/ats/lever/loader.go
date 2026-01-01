@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
 	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
@@ -39,7 +40,14 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 			return
 		}
 
-		slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
+		if job.Company.Name == "" {
+			err := scrapeCompanyInfo(ctx, job)
+			if err != nil {
+				slog.ErrorContext(ctx, "Error scraping company info from job URL", slog.String("url", job.URL), slog.Any("error", err))
+				// we continue even if there's an error here
+			}
+		}
+
 		jobs = append(jobs, job)
 	})
 	if err != nil {
@@ -69,10 +77,43 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 		slog.ErrorContext(ctx, "Error parsing Lever job from job endpoint", slog.Any("error", err))
 		return nil, fmt.Errorf("error parsing Lever job from job endpoint: %w", err)
 	}
+	// Try to get company info from LD+JSON on the job page
+	err = scrapeCompanyInfo(ctx, job)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error scraping company info from job URL", slog.String("url", job.URL), slog.Any("error", err))
+		// we continue even if there's an error here
+	}
 
 	slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
 
 	return job, nil
+}
+
+func scrapeCompanyInfo(ctx context.Context, job *models.Job) error {
+	// Try to get company name and logo from LD+JSON on the job page
+	json, err := helpers.GetLDJSON(ctx, job.URL)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error getting LD+JSON from job URL", slog.String("url", job.URL), slog.Any("error", err))
+		return fmt.Errorf("error getting LD+JSON from job URL: %w", err)
+	}
+
+	org, ok := json["hiringOrganization"].(map[string]any)
+	if ok {
+		name, ok := org["name"].(string)
+		if ok {
+			job.Company.Name = name
+		}
+	}
+
+	logo, ok := org["logo"].(string)
+	if ok {
+		logoURL, err := url.Parse(logo)
+		if err == nil {
+			job.Company.Logo = *logoURL
+		}
+	}
+
+	return nil
 }
 
 func parseLeverJob(ctx context.Context, data []byte) (*models.Job, error) {
