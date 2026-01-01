@@ -84,6 +84,8 @@ func (d Department) String() string {
 		return "security"
 	case SoftwareEngineering:
 		return "software_engineering"
+	case UnknownDepartment:
+		return "unknown"
 	default:
 		return "unknown"
 	}

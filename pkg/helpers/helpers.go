@@ -1,3 +1,4 @@
+// Package helpers provides utility functions for common operations.
 package helpers
 
 // StringValue safely dereferences a string pointer, returning an empty string if the pointer is nil.
