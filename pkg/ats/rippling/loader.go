@@ -89,13 +89,6 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 			if err == nil {
 				job.Company.Description = helpers.Ptr(company)
 			}
-		case "board":
-			boardURL, err := jsonparser.GetString(value, "boardURL")
-			if err == nil {
-				job.Company.HomepageURL = helpers.Ptr(boardURL)
-			}
-		case "companyName":
-			job.Company.Name = string(value)
 		case "workLocations":
 			_, jerr := jsonparser.ArrayEach(value, func(locValue []byte, _ jsonparser.ValueType, _ int, _ error) {
 				location := string(locValue)
@@ -130,6 +123,13 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 			job.ProcessDatePosted(ctx, value)
 		case "url":
 			job.URL = string(value)
+		case "board":
+			boardURL, err := jsonparser.GetString(value, "boardURL")
+			if err == nil {
+				job.Company.HomepageURL = helpers.Ptr(boardURL)
+			}
+		case "companyName":
+			job.Company.Name = string(value)
 		default:
 			job.AddMetadata(string(key), string(value))
 		}

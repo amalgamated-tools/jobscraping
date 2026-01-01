@@ -80,14 +80,7 @@ func parseWorkableJob(ctx context.Context, data []byte) (*models.Job, error) {
 				job.AddMetadata("workable_id", id)
 			}
 		case "shortcode":
-			// this is definitely a string but jsonparser thinks it is a number
-			shortcode, _, _, err := jsonparser.Get(value)
-			if err != nil {
-				slog.ErrorContext(ctx, "Failed to parse shortcode", slog.String("ats", "workable"), slog.Any("error", err))
-				return fmt.Errorf("error parsing shortcode: %w", err)
-			}
-
-			job.SourceID = string(shortcode)
+			job.SourceID = string(value)
 		case "title":
 			job.Title = string(value)
 		case "remote":
@@ -121,15 +114,13 @@ func parseWorkableJob(ctx context.Context, data []byte) (*models.Job, error) {
 			job.EmploymentType = models.ParseEmploymentType(string(value))
 		case "department":
 			_, err := jsonparser.ArrayEach(value, func(deptValue []byte, _ jsonparser.ValueType, _ int, _ error) {
-				department, err := jsonparser.GetString(deptValue)
-				if err != nil {
-					slog.ErrorContext(ctx, "Failed to parse department", slog.String("ats", "workable"), slog.Any("error", err))
-					return
-				}
+				department := string(deptValue)
 
 				if job.Department == models.UnknownDepartment {
 					job.Department = models.ParseDepartment(department)
 				}
+
+				job.DepartmentRaw = department
 
 				job.AddMetadata("parsed_department", department)
 			})

@@ -63,3 +63,28 @@ func ParseDepartment(dept string) Department { //nolint:cyclop
 		return UnknownDepartment // Default to Unsure if unknown
 	}
 }
+
+func (d Department) String() string {
+	switch d {
+	case AI:
+		return "ai"
+	case CustomerSuccessSupport:
+		return "customer_success_support"
+	case Data:
+		return "data"
+	case Design:
+		return "design"
+	case Marketing:
+		return "marketing"
+	case ProductManagement:
+		return "product_management"
+	case Sales:
+		return "sales"
+	case Security:
+		return "security"
+	case SoftwareEngineering:
+		return "software_engineering"
+	default:
+		return "unknown"
+	}
+}
