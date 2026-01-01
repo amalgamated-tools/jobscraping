@@ -80,10 +80,6 @@ func parseLeverJob(ctx context.Context, data []byte) (*models.Job, error) {
 
 	err := jsonparser.ObjectEach(job.GetSourceData(), func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
 		switch string(key) {
-		case "id":
-			job.SourceID = string(value)
-		case "text":
-			job.Title = string(value)
 		case "categories":
 			// Object with location, commitment, team, department, and allLocations.
 			// Note: primary posting location is represented by location, and also appears in the allLocations array.
@@ -132,15 +128,10 @@ func parseLeverJob(ctx context.Context, data []byte) (*models.Job, error) {
 			}
 		case "createdAt":
 			job.ProcessDatePosted(ctx, value)
-		case "country":
-			// An ISO 3166-1 alpha-2 code for a country / territory (or null to indicate an unknown country). This is not filterable.
-			job.AddMetadata("country", string(value))
-		case "openingPlain":
-			job.AddMetadata("opening_plain", string(value))
 		case "descriptionPlain":
 			job.Description = string(value)
-		case "descriptionBodyPlain":
-			job.AddMetadata("description_body_plain", string(value))
+		case "id":
+			job.SourceID = string(value)
 		case "lists":
 			// Extra lists (such as requirements, benefits, etc.) from the job posting. This is a list of {text:NAME, content:"unstyled HTML of list elements"}
 			_, err := jsonparser.ArrayEach(value, func(listValue []byte, _ jsonparser.ValueType, _ int, _ error) {
@@ -161,18 +152,6 @@ func parseLeverJob(ctx context.Context, data []byte) (*models.Job, error) {
 			if err != nil {
 				slog.ErrorContext(ctx, "Error parsing lists array", slog.Any("error", err))
 				// we continue even if there's an error here
-			}
-		case "additionalPlain":
-			job.AddMetadata("additional_plain", string(value))
-		case "hostedUrl":
-			job.URL = string(value)
-		case "workplaceType":
-			// Describes the primary workplace environment for a job posting. May be one of unspecified, on-site, remote, or hybrid. Not filterable
-			workplaceType := string(value)
-
-			job.LocationType = models.ParseLocationType(workplaceType)
-			if job.LocationType == models.RemoteLocation {
-				job.IsRemote = true
 			}
 		case "salaryRange":
 			// Object with currency, interval, min, and max. This field is optional. In XML mode this field is parsed into a string.
@@ -207,9 +186,21 @@ func parseLeverJob(ctx context.Context, data []byte) (*models.Job, error) {
 			}
 
 			job.AddMetadata("compensation_interval", interval)
-		case "salaryDescriptionPlain":
-			// Optional description for the Salary range (as plainText).
-			job.AddMetadata("salary_description_plain", string(value))
+		case "text":
+			job.Title = string(value)
+		case "country":
+			// An ISO 3166-1 alpha-2 code for a country / territory (or null to indicate an unknown country). This is not filterable.
+			job.AddMetadata("country", string(value))
+		case "workplaceType":
+			// Describes the primary workplace environment for a job posting. May be one of unspecified, on-site, remote, or hybrid. Not filterable
+			workplaceType := string(value)
+
+			job.LocationType = models.ParseLocationType(workplaceType)
+			if job.LocationType == models.RemoteLocation {
+				job.IsRemote = true
+			}
+		case "hostedUrl":
+			job.URL = string(value)
 		default:
 			job.AddMetadata(string(key), string(value))
 		}
