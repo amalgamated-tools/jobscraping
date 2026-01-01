@@ -83,8 +83,6 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 		switch string(key) {
 		case "absolute_url":
 			job.URL = string(value)
-		case "internal_job_id":
-			job.AddMetadata("internal_job_id", string(value))
 		case "location":
 			location, err := jsonparser.GetString(value, "name")
 			if err != nil {
@@ -132,10 +130,6 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 			})
 		case "id":
 			job.SourceID = string(value)
-		case "updated_at":
-			job.AddMetadata("updated_at", string(value))
-		case "requisition_id":
-			job.AddMetadata("requisition_id", string(value))
 		case "title":
 			job.Title = string(value)
 		case "pay_input_ranges":
@@ -160,11 +154,9 @@ func parseGreenhouseJob(ctx context.Context, data []byte) (*models.Job, error) {
 				job.ProcessCommitment([]string{title})
 			}
 		case "company_name":
-			job.AddMetadata("company_name", string(value))
+			job.Company.Name = string(value)
 		case "first_published":
 			job.ProcessDatePosted(ctx, value)
-		case "language":
-			job.AddMetadata("language", string(value))
 		case "content":
 			job.Description = string(value)
 		case "departments":
