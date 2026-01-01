@@ -18,13 +18,13 @@ import (
 
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-	// ashbyExample()
-	// bambooExample()
-	// gemExample()
-	// greenhouseExample()
+	ashbyExample()
+	bambooExample()
+	gemExample()
+	greenhouseExample()
 	leverExample()
-	// ripplingExample()
-	// workableExample()
+	ripplingExample()
+	workableExample()
 }
 
 func ashbyExample() {
