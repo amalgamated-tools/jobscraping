@@ -132,6 +132,14 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 					job.Company.Homepage = *homepage
 				}
 			}
+
+			logo, err := jsonparser.GetString(value, "logo")
+			if err == nil && logo != "" && logo != "null" {
+				logoURL, err := url.Parse(logo)
+				if err == nil {
+					job.Company.Logo = *logoURL
+				}
+			}
 		case "companyName":
 			job.Company.Name = string(value)
 		default:
