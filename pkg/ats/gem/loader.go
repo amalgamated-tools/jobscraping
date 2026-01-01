@@ -112,8 +112,6 @@ func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {
 		case "first_published_at":
 			job.ProcessDatePosted(ctx, value)
 		case "id":
-			job.AddMetadata("gem_id", string(value))
-		case "internal_job_id":
 			job.SourceID = string(value)
 		case "location":
 			locationName, err := jsonparser.GetString(value, "name")
@@ -242,7 +240,7 @@ func parseGemOatsJob(ctx context.Context, data []byte) (*models.Job, error) {
 		}
 
 		return nil
-	})
+	}, "[0]", "data", "oatsExternalJobPosting")
 	if err != nil {
 		slog.ErrorContext(ctx, "Error parsing Gem job object", slog.Any("error", err))
 		return nil, fmt.Errorf("error parsing Gem job object: %w", err)

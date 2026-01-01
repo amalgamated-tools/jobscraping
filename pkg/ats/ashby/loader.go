@@ -93,7 +93,12 @@ func parseAshbyJob(ctx context.Context, data []byte) (*models.Job, error) {
 		switch string(key) {
 		case "compensationTierSummary":
 			// summary is like $155K - $190K or €185K - €317K
-			comp := models.ParseCompensation(string(value))
+			summary := string(value)
+			if summary == "" || strings.EqualFold(summary, "null") {
+				return nil
+			}
+
+			comp := models.ParseCompensation(summary)
 			if !comp.Parsed {
 				slog.ErrorContext(ctx, "Unable to parse compensation string", slog.String("summary", string(value)))
 				return nil // this is okay
