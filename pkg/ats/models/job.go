@@ -14,7 +14,7 @@ const millisecondsToSeconds = 1000
 // Job represents a job posting with various attributes.
 type Job struct {
 	URL              string         `json:"url"`
-	Company          Company        `json:"company"`
+	Company          *Company       `json:"company"`
 	CompensationUnit string         `json:"compensation_unit"`
 	DatePosted       time.Time      `json:"date_posted"`
 	Department       Department     `json:"department"`
@@ -41,7 +41,7 @@ func NewJob(source string, data []byte) *Job {
 	return &Job{
 		sourceData:     data,
 		Source:         source,
-		Company:        Company{},
+		Company:        &Company{},
 		Department:     UnknownDepartment,
 		EmploymentType: UnknownEmploymentType,
 		Equity:         UnknownEquity,
@@ -110,7 +110,7 @@ func (j *Job) ProcessDatePosted(ctx context.Context, value []byte) {
 			return
 		}
 
-		slog.ErrorContext(ctx, "Parsed publishedDate is in the future", slog.Time("publishedDate", datePosted))
+		slog.DebugContext(ctx, "Parsed publishedDate is in the future", slog.Time("publishedDate", datePosted))
 		// this is probably in milliseconds, try again
 		datePosted = time.Unix(intValue/millisecondsToSeconds, 0).In(time.UTC)
 

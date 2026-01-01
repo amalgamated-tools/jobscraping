@@ -46,7 +46,7 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 		}
 
 		jobs = append(jobs, job)
-	}, "jobs")
+	}, "results")
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse jobs for company %s: %w", companyName, err)
 	}
@@ -64,7 +64,15 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 		return nil, fmt.Errorf("failed to fetch job %s for company %s: %w", jobID, companyName, err)
 	}
 
-	return parseWorkableJob(ctx, body)
+	job, err := parseWorkableJob(ctx, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse job %s for company %s: %w", jobID, companyName, err)
+	}
+
+	// https://apply.workable.com/darwin-ai/j/214D2728FC/
+	job.URL = fmt.Sprintf("https://apply.workable.com/%s/j/%s/", companyName, job.SourceID)
+
+	return job, nil
 }
 
 func parseWorkableJob(ctx context.Context, data []byte) (*models.Job, error) {

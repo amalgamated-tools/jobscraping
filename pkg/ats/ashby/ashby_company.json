@@ -1,0 +1,13 @@
+{
+    "data": {
+        "organization": {
+            "__typename": "Organization",
+            "name": "1Password",
+            "publicWebsite": "https://1password.com/",
+            "timezone": "America/New_York",
+            "theme": {
+                "logoSquareImageUrl": "https://app.ashbyhq.com/api/images/org-theme-logo/b8833a99-53c9-4b1c-9e2d-dd2b7952c640/bd5cff34-571d-4e8b-bf53-7f9bcef57d29/3119f472-35f1-4a3f-9d31-f4c9f5e8f91b.png"
+            }
+        }
+    }
+}

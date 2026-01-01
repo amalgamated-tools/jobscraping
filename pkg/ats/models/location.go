@@ -49,6 +49,10 @@ func ParseLocation(data []byte) Location {
 	location := Location{}
 
 	err := jsonparser.ObjectEach(data, func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
+		if string(value) == "null" {
+			return nil
+		}
+
 		switch string(key) {
 		case "city", "addressLocality":
 			location.City = string(value)

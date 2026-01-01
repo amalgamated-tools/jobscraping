@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 
 	"github.com/amalgamated-tools/jobscraping/pkg/ats/models"
 	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
@@ -126,7 +127,10 @@ func parseRipplingJob(ctx context.Context, data []byte) (*models.Job, error) {
 		case "board":
 			boardURL, err := jsonparser.GetString(value, "boardURL")
 			if err == nil {
-				job.Company.HomepageURL = helpers.Ptr(boardURL)
+				homepage, err := url.Parse(boardURL)
+				if err == nil {
+					job.Company.Homepage = *homepage
+				}
 			}
 		case "companyName":
 			job.Company.Name = string(value)

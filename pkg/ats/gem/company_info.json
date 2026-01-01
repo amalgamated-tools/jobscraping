@@ -1,0 +1,31 @@
+{
+    "data": {
+        "publicBrandingTheme": {
+            "id": "QnJhbmRpbmdUaGVtZToxMDExMw==",
+            "theme": {
+                "FONTS": {
+                    "BODY": "Arial",
+                    "NAV_BAR": "Arial"
+                },
+                "ASSETS": {
+                    "LOGO_URL": "https://usercontent.zscdn.net/assets/d986729eb29e6f0d4fb17ab8a4400ba7-1764805227.png",
+                    "FAVICON_URL": "https://usercontent.zscdn.net/campaigns/1677270541627-gem%20white%20logo.png"
+                },
+                "PAGE_COLOR": {
+                    "BACKGROUND": "#FFFFFF",
+                    "FOREGROUND": "#000000"
+                },
+                "ACCENT_COLOR": {
+                    "BACKGROUND": "#2C2F31",
+                    "FOREGROUND": "#ffffff"
+                },
+                "_schemaVersion": 1,
+                "HEADER_AND_FOOTER_COLOR": {
+                    "BACKGROUND": "#ffffff",
+                    "FOREGROUND": "#000000"
+                }
+            },
+            "__typename": "BrandingTheme"
+        }
+    }
+}

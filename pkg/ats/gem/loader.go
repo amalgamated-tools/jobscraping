@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -15,8 +16,10 @@ import (
 
 var (
 	gemJobQuery = "[\n  {\n    \"operationName\": \"ExternalJobPostingQuery\",\n    \"variables\": {\n      \"boardId\": \"%s\",\n      \"extId\": \"%s\"\n    },\n    \"query\": \"fragment ExternalJobPostFragment on PublicOatsJobPost {\\n  id\\n  title\\n  descriptionHtml\\n  extId\\n  startDateTs\\n  firstPublishedTsSec\\n  companyLogo\\n  companyUrl\\n  isApplicationFormHidden\\n  applicationFormTemplate {\\n    id\\n    includeEeoc\\n    eeocConfig {\\n      includeRaceXGender\\n      includeVeteranStatus\\n      includeDisabilityStatus\\n      __typename\\n    }\\n    __typename\\n  }\\n  isUnlistedExternally\\n  locations {\\n    id\\n    name\\n    city\\n    isoCountry\\n    isRemote\\n    extId\\n    __typename\\n  }\\n  job {\\n    id\\n    locationType\\n    employmentType\\n    requisitionId\\n    teamDisplayName\\n    department {\\n      id\\n      name\\n      extId\\n      __typename\\n    }\\n    locations {\\n      id\\n      name\\n      city\\n      isoCountry\\n      isRemote\\n      extId\\n      __typename\\n    }\\n    __typename\\n  }\\n  jobPostSectionHtml {\\n    introHtml\\n    outroHtml\\n    __typename\\n  }\\n  __typename\\n}\\n\\nquery ExternalJobPostingQuery($boardId: String!, $extId: String!) {\\n  oatsExternalJobPosting(boardId: $boardId, extId: $extId) {\\n    id\\n    ...ExternalJobPostFragment\\n    __typename\\n  }\\n  oatsJobPostFieldsAndQuestions(\\n    jobBoardVanityPath: $boardId\\n    jobPostExtId: $extId\\n  ) {\\n    fields {\\n      fieldType\\n      isRequired\\n      __typename\\n    }\\n    questions {\\n      extId\\n      answerType\\n      displayType\\n      fileType\\n      text\\n      description\\n      isRequired\\n      options {\\n        extId\\n        value\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\"\n  }\n]\n"
-	gemGql      = "https://jobs.gem.com/api/public/graphql/batch"
-	gemURL      = "https://api.gem.com/job_board/v0/%s/job_posts/"
+
+	gemCompanyQuery = "{\"query\":\"query JobBoardTheme($boardId: String!) { \\n  publicBrandingTheme(externalId: $boardId) {\\n    id\\n    theme \\n    __typename\\n  }\\n}\",\"variables\":{\"boardId\": \"%s\"}}"
+	gemGql          = "https://jobs.gem.com/api/public/graphql/batch"
+	gemURL          = "https://api.gem.com/job_board/v0/%s/job_posts/"
 )
 
 // ScrapeCompany scrapes all job postings for a given company from the Gem ATS.
@@ -39,6 +42,15 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 		if jerr != nil {
 			slog.ErrorContext(ctx, "Error parsing Gem job from jobs array", slog.Any("error", jerr))
 			return
+		}
+
+		if job.Company.Name == "" {
+			company, err := ScrapeCompanyInfo(ctx, companyName)
+			if err != nil {
+				slog.ErrorContext(ctx, "Error scraping company info for Gem job", slog.String("company_name", companyName), slog.Any("error", err))
+			} else {
+				job.Company = company
+			}
 		}
 
 		slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
@@ -75,7 +87,49 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 
 	job.URL = fmt.Sprintf("https://jobs.gem.com/%s/%s", companyName, jobID)
 
+	company, err := ScrapeCompanyInfo(ctx, companyName)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error scraping company info for Gem job", slog.String("company_name", companyName), slog.Any("error", err))
+	}
+
+	job.Company = company
+
 	return job, nil
+}
+
+// ScrapeCompanyInfo scrapes company information for a given company from the Gem ATS.
+func ScrapeCompanyInfo(ctx context.Context, companyName string) (*models.Company, error) {
+	payload := strings.NewReader(fmt.Sprintf(gemCompanyQuery, companyName))
+
+	bodyText, err := helpers.PostJSON(
+		ctx,
+		gemGql,
+		payload,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error getting JSON from Gem company info endpoint: %w", err)
+	}
+
+	company := models.NewCompany()
+	company.Name = companyName
+
+	// we can only get the company logo URL from here
+	logoURL, err := jsonparser.GetString(bodyText, "data", "publicBrandingTheme", "theme", "ASSETS", "LOGO_URL")
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing Gem company info response", slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing Gem company info response: %w", err)
+	}
+
+	parsedLogoURL, err := url.Parse(logoURL)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error parsing company logo URL from Gem company info", slog.String("url", logoURL), slog.Any("error", err))
+		return nil, fmt.Errorf("error parsing company logo URL from Gem company info: %w", err)
+	}
+
+	company.Logo = *parsedLogoURL
+
+	return company, nil
 }
 
 func parseGemCompanyJob(ctx context.Context, data []byte) (*models.Job, error) {

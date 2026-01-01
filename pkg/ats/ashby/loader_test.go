@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	models "github.com/amalgamated-tools/jobscraping/pkg/ats/models"
-	"github.com/amalgamated-tools/jobscraping/pkg/helpers"
 )
 
 //go:embed single_job.json
@@ -87,11 +86,11 @@ func Test_parseSingleAshbyJob(t *testing.T) {
 		t.Errorf("parseAshbyJob() Equity = %v, want %v", job.Equity, models.EquityOffered)
 	}
 
-	if helpers.StringValue(job.Company.HomepageURL) != "https://www.ashbyhq.com" {
-		t.Errorf("parseAshbyJob() Company.HomepageURL = %v, want %v", helpers.StringValue(job.Company.HomepageURL), "https://www.ashbyhq.com")
+	if job.Company.Homepage.String() != "https://www.ashbyhq.com" {
+		t.Errorf("parseAshbyJob() Company.Homepage = %v, want %v", job.Company.Homepage.String(), "https://www.ashbyhq.com")
 	}
 
-	if helpers.StringValue(job.Company.LogoURL) != "https://www.ashbyhq.com/logo.png" {
-		t.Errorf("parseAshbyJob() Company.LogoURL = %v, want %v", helpers.StringValue(job.Company.LogoURL), "https://www.ashbyhq.com/logo.png")
+	if job.Company.Logo.String() != "https://www.ashbyhq.com/logo.png" {
+		t.Errorf("parseAshbyJob() Company.Logo = %v, want %v", job.Company.Logo.String(), "https://www.ashbyhq.com/logo.png")
 	}
 }
