@@ -27,6 +27,12 @@ var (
 func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, error) {
 	slog.DebugContext(ctx, "Scraping company", slog.String("ats", "ashby"), slog.String("company_name", companyName))
 
+	company, err := ScrapeCompanyInfo(ctx, companyName)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error scraping company info for Ashby company", slog.String("company_name", companyName), slog.Any("error", err))
+		return nil, fmt.Errorf("error scraping company info for Ashby company: %w", err)
+	}
+
 	jobs := make([]*models.Job, 0)
 
 	// The URL is like https://api.ashbyhq.com/posting-api/job-board/{companyName}?includeCompensation=true
@@ -53,12 +59,7 @@ func ScrapeCompany(ctx context.Context, companyName string) ([]*models.Job, erro
 		}
 
 		if job.Company.Name == "" {
-			company, err := ScrapeCompanyInfo(ctx, companyName)
-			if err != nil {
-				slog.ErrorContext(ctx, "Error scraping company info for Ashby job", slog.String("company_name", companyName), slog.Any("error", err))
-			} else {
-				job.Company = company
-			}
+			job.Company = company
 		}
 
 		slog.DebugContext(ctx, "Parsed job", slog.String("job_id", job.SourceID), slog.String("title", job.Title))
@@ -97,13 +98,6 @@ func ScrapeJob(ctx context.Context, companyName, jobID string) (*models.Job, err
 	}
 
 	job.URL = fmt.Sprintf("https://jobs.ashbyhq.com/%s/%s", companyName, jobID)
-
-	company, err := ScrapeCompanyInfo(ctx, companyName)
-	if err != nil {
-		slog.ErrorContext(ctx, "Error scraping company info for Ashby job", slog.String("company_name", companyName), slog.Any("error", err))
-	} else {
-		job.Company = company
-	}
 
 	return job, nil
 }
